@@ -32,12 +32,4 @@ dotnet restore
 dotnet run --project Aethria.AppHost
 ```
 
-For the web client only:
-
-```bash
-cd aethria.web
-npm install
-npm run dev
-```
-
 Configuration is supplied through Aspire parameters and the `appsettings*.json` files for database, Azure Storage, Azure AI Foundry/OpenAI, Tavily, and authentication settings.
