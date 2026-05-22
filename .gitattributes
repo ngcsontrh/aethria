@@ -1,0 +1,17 @@
+# Backend .NET files follow the C# EditorConfig baseline.
+src/.editorconfig text eol=crlf
+*.cs text eol=crlf
+*.csproj text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
+*.slnx text eol=crlf
+
+# Frontend files follow Prettier's LF baseline.
+src/aethria.web/.prettierrc text eol=lf
+src/aethria.web/angular.json text eol=lf
+src/aethria.web/package*.json text eol=lf
+src/aethria.web/**/*.css text eol=lf
+src/aethria.web/**/*.html text eol=lf
+src/aethria.web/**/*.json text eol=lf
+src/aethria.web/**/*.md text eol=lf
+src/aethria.web/**/*.ts text eol=lf

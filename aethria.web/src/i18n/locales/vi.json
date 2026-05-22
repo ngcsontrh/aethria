@@ -1,0 +1,415 @@
+{
+  "auth": {
+    "login": {
+      "title": "Chào mừng trở lại",
+      "subtitle": "Đăng nhập để tiếp tục hành trình học tập",
+      "submit": "Đăng nhập",
+      "forgotPassword": "Quên mật khẩu?",
+      "noAccount": "Chưa có tài khoản?",
+      "registerHere": "Đăng ký tại đây",
+      "googleSuccess": "Xác thực bằng Google thành công! Chào mừng, {{email}}.",
+      "loginSuccess": "Đăng nhập thành công! Chào mừng trở lại, {{email}}."
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "subtitle": "Tham gia Aethria để học tập thông minh hơn",
+      "submit": "Đăng ký tài khoản",
+      "haveAccount": "Đã có tài khoản?",
+      "loginHere": "Đăng nhập tại đây",
+      "registerSuccess": "Đăng ký thành công! Chào mừng, {{email}}."
+    },
+    "common": {
+      "emailLabel": "Địa chỉ email",
+      "emailPlaceholder": "ten@tenmien.com",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu bảo mật",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu bảo mật",
+      "rememberMe": "Ghi nhớ đăng nhập",
+      "orSocial": "Hoặc tiếp tục với email",
+      "error": "Lỗi",
+      "success": "Thành công",
+      "googleFail": "Xác thực bằng Google thất bại. Vui lòng thử lại.",
+      "genericError": "Đã xảy ra lỗi trong quá trình xác thực. Vui lòng thử lại.",
+      "appearance": {
+        "title": "Giao diện",
+        "light": "Sáng",
+        "dark": "Tối"
+      }
+    },
+    "passwordRequirements": {
+      "length": "Có ít nhất 8 ký tự",
+      "number": "Bao gồm chữ số",
+      "lowercase": "Bao gồm chữ thường",
+      "uppercase": "Bao gồm chữ hoa",
+      "symbol": "Bao gồm ký tự đặc biệt"
+    },
+    "validation": {
+      "emailInvalid": "Vui lòng nhập địa chỉ email hợp lệ",
+      "passwordRequired": "Vui lòng nhập mật khẩu",
+      "passwordTooShort": "Mật khẩu phải dài ít nhất 8 ký tự",
+      "passwordNeedNumber": "Mật khẩu phải bao gồm ít nhất một chữ số",
+      "passwordNeedLowercase": "Mật khẩu phải bao gồm ít nhất một chữ thường",
+      "passwordNeedUppercase": "Mật khẩu phải bao gồm ít nhất một chữ hoa",
+      "passwordNeedSymbol": "Mật khẩu phải bao gồm ít nhất một ký tự đặc biệt",
+      "passwordsMustMatch": "Mật khẩu không khớp"
+    }
+  },
+  "layout": {
+    "title": "Aethria",
+    "nav": {
+      "chat": "Hỏi đáp",
+      "generalChat": "Hỏi đáp chung",
+      "mentorChat": "Hỏi đáp với Cố vấn",
+      "resourceChat": "Hỏi đáp Tài liệu",
+      "quizzes": "Bài trắc nghiệm",
+      "roadmaps": "Lộ trình học tập",
+      "mentors": "Quản lý Cố vấn",
+      "resources": "Quản lý Tài liệu",
+      "apiKeys": "API Keys"
+    },
+    "user": {
+      "account": "Tài khoản",
+      "logout": "Đăng xuất",
+      "profile": "Hồ sơ",
+      "settings": "Cài đặt",
+      "appearance": "Giao diện",
+      "language": "Ngôn ngữ"
+    }
+  },
+  "chat": {
+    "sessions": {
+      "title": "Lịch sử hỏi đáp",
+      "new": "Cuộc hỏi đáp mới",
+      "empty": "Chưa có cuộc hỏi đáp nào",
+      "toggleCollapse": "Ẩn lịch sử",
+      "toggleExpand": "Hiện lịch sử",
+      "deleteConfirmTitle": "Xóa cuộc hỏi đáp",
+      "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa phiên hỏi đáp này không? Hành động này không thể hoàn tác.",
+      "deleteAllConfirmTitle": "Xóa tất cả hỏi đáp",
+      "deleteAllConfirmMessage": "Bạn có chắc chắn muốn xóa tất cả phiên hỏi đáp trong chế độ này không? Hành động này không thể hoàn tác.",
+      "delete": "Xóa",
+      "cancel": "Hủy",
+      "unnamed": "Phiên hỏi đáp chưa đặt tên"
+    },
+    "selectors": {
+      "selectMentor": "Chọn Cố vấn học tập",
+      "selectResource": "Chọn tài liệu học tập",
+      "mentorSubtitle": "Chọn một cố vấn AI chuyên biệt để hỗ trợ bạn về các chủ đề cụ thể",
+      "resourceSubtitle": "Hỏi đáp với các tài liệu đã tải lên của bạn để trích xuất kiến thức chính xác",
+      "startChat": "Bắt đầu hỏi đáp",
+      "noMentors": "Không có cố vấn nào khả dụng",
+      "noResources": "Không có tài liệu nào khả dụng",
+      "fileType": "Loại: {{type}}",
+      "fileSize": "Kích thước: {{size}} KB"
+    },
+    "input": {
+      "placeholder": "Nhập tin nhắn...",
+      "send": "Gửi",
+      "stop": "Dừng"
+    },
+    "messages": {
+      "empty": "Bắt đầu một cuộc hỏi đáp mới bằng cách gửi tin nhắn bên dưới!",
+      "loading": "Đang suy nghĩ..."
+    },
+    "tools": {
+      "title": "Công cụ kích hoạt",
+      "web_search": "Tìm kiếm Web",
+      "web_extract": "Trích xuất Web"
+    }
+  },
+  "mentor": {
+    "title": "Quản lý Cố vấn",
+    "create": "Tạo Cố vấn",
+    "createTitle": "Tạo Cố vấn",
+    "editTitle": "Chỉnh sửa Cố vấn",
+    "deleteTitle": "Xóa Cố vấn",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa \"{{name}}\"? Hành động này không thể hoàn tác.",
+    "deleteBtn": "Xóa",
+    "empty": "Chưa có cố vấn nào. Hãy tạo cố vấn đầu tiên!",
+    "table": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "createdAt": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "form": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "instruction": "Hướng dẫn",
+      "tools": "Công cụ",
+      "cancel": "Hủy",
+      "save": "Lưu"
+    },
+    "validation": {
+      "nameRequired": "Vui lòng nhập tên",
+      "nameTooLong": "Tên không được vượt quá 100 ký tự",
+      "descriptionRequired": "Vui lòng nhập mô tả",
+      "descriptionTooLong": "Mô tả không được vượt quá 1000 ký tự",
+      "instructionRequired": "Vui lòng nhập hướng dẫn",
+      "instructionTooLong": "Hướng dẫn không được vượt quá 4000 ký tự"
+    }
+  },
+  "resource": {
+    "title": "Quản lý Tài liệu",
+    "create": "Tải lên Tài liệu",
+    "createTitle": "Tải lên Tài liệu",
+    "editTitle": "Chỉnh sửa Tài liệu",
+    "deleteTitle": "Xóa Tài liệu",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa \"{{name}}\"? Hành động này không thể hoàn tác.",
+    "deleteBtn": "Xóa",
+    "empty": "Chưa có tài liệu nào. Hãy tải lên tài liệu đầu tiên!",
+    "table": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "fileType": "Loại",
+      "fileSize": "Kích thước",
+      "createdAt": "Đã tải lên",
+      "actions": "Thao tác"
+    },
+    "form": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "file": "Tài liệu",
+      "filePlaceholder": "Chọn tài liệu để tải lên",
+      "cancel": "Hủy",
+      "save": "Lưu"
+    },
+    "validation": {
+      "nameRequired": "Vui lòng nhập tên",
+      "nameTooLong": "Tên không được vượt quá 100 ký tự",
+      "descriptionTooLong": "Mô tả không được vượt quá 1000 ký tự",
+      "fileRequired": "Vui lòng chọn tài liệu"
+    }
+  },
+  "quiz": {
+    "title": "Bài trắc nghiệm",
+    "create": "Tạo bài trắc nghiệm",
+    "createTitle": "Tạo bài trắc nghiệm mới",
+    "editTitle": "Chỉnh sửa bài trắc nghiệm",
+    "deleteTitle": "Xóa bài trắc nghiệm",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa \"{{name}}\"? Hành động này không thể hoàn tác.",
+    "deleteBtn": "Xóa",
+    "empty": "Chưa có bài trắc nghiệm nào. Hãy tự tạo hoặc dùng AI để tạo bài trắc nghiệm đầu tiên!",
+    "noDescription": "Không có mô tả",
+    "table": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "questions": "Số câu hỏi",
+      "createdAt": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "form": {
+      "mode": "Phương thức tạo",
+      "modeManual": "Thủ công (Trống)",
+      "modeAI": "Trình tạo AI",
+      "name": "Tên bài trắc nghiệm",
+      "description": "Mô tả",
+      "resource": "Tài liệu tham chiếu",
+      "resourceSelect": "Chọn tài liệu",
+      "prompt": "Yêu cầu cho AI",
+      "promptPlaceholder": "Ví dụ: Tập trung vào chương 3, câu hỏi nâng cao...",
+      "numberOfQuestions": "Số lượng câu hỏi",
+      "cancel": "Hủy",
+      "save": "Lưu",
+      "generate": "Tạo bằng AI"
+    },
+    "aiProgress": {
+      "title": "Đang tạo trắc nghiệm bằng AI",
+      "started": "Đang kết nối với dịch vụ AI...",
+      "generating": "Đang tạo câu hỏi từ tài liệu...",
+      "completed": "Tạo bài trắc nghiệm thành công!",
+      "failed": "Tạo bài trắc nghiệm thất bại. Vui lòng thử lại."
+    },
+    "validation": {
+      "nameRequired": "Vui lòng nhập tên",
+      "nameTooLong": "Tên không được vượt quá 100 ký tự",
+      "resourceRequired": "Vui lòng chọn tài liệu để AI tạo câu hỏi",
+      "questionsCountRequired": "Vui lòng nhập số lượng câu hỏi",
+      "questionsCountRange": "Số lượng câu hỏi phải nằm trong khoảng từ 1 đến 50"
+    },
+    "attempt": {
+      "title": "Làm bài trắc nghiệm: {{name}}",
+      "submit": "Nộp bài",
+      "close": "Đóng",
+      "resultTitle": "Kết quả bài làm",
+      "score": "Điểm số",
+      "status": "Trạng thái",
+      "passed": "Đạt",
+      "failed": "Chưa đạt",
+      "yourAnswer": "Câu trả lời của bạn",
+      "correctAnswer": "Đáp án đúng",
+      "explanation": "Giải thích",
+      "emptyQuestions": "Bài trắc nghiệm này chưa có câu hỏi nào.",
+      "attemptLabel": "Làm bài",
+      "historyLabel": "Lịch sử làm bài"
+    },
+    "history": {
+      "title": "Lịch sử làm bài: {{name}}",
+      "empty": "Chưa có lượt làm bài nào.",
+      "table": {
+        "date": "Thời gian nộp",
+        "score": "Điểm số",
+        "status": "Kết quả",
+        "actions": "Thao tác"
+      },
+      "viewDetail": "Xem chi tiết",
+      "detailTitle": "Chi tiết bài làm ngày {{date}}",
+      "statusPassed": "Đạt",
+      "statusFailed": "Chưa đạt"
+    },
+    "review": {
+      "result": "Kết quả:",
+      "passed": "ĐẠT",
+      "failed": "CHƯA ĐẠT",
+      "accuracy": "Tỷ lệ chính xác: {{percent}}%",
+      "reviewQuestions": "Xem lại câu hỏi:",
+      "questionLabel": "Câu {{index}}: {{text}}",
+      "correct": "Đúng",
+      "wrong": "Sai",
+      "correctAnswer": "Đáp án đúng",
+      "yourAnswer": "Bạn chọn",
+      "explanationLabel": "Giải thích đáp án:"
+    }
+  },
+  "roadmap": {
+    "title": "Lộ trình học tập",
+    "create": "Tạo lộ trình học tập",
+    "createTitle": "Tạo lộ trình bằng AI",
+    "detailTitle": "Chi tiết lộ trình",
+    "deleteTitle": "Xóa lộ trình",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa lộ trình học tập \"{{name}}\"? Hành động này không thể hoàn tác.",
+    "deleteBtn": "Xóa",
+    "empty": "Chưa có lộ trình học tập nào. Hãy dùng AI để tạo lộ trình đầu tiên!",
+    "table": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "createdAt": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "form": {
+      "name": "Tên lộ trình",
+      "description": "Mô tả",
+      "resource": "Tài liệu tham chiếu",
+      "resourceSelect": "Chọn tài liệu",
+      "prompt": "Yêu cầu cho AI",
+      "promptPlaceholder": "Ví dụ: Tập trung vào cấp độ trung cấp, cấu trúc kế hoạch 4 tuần...",
+      "cancel": "Hủy",
+      "generate": "Tạo bằng AI"
+    },
+    "aiProgress": {
+      "title": "Đang tạo lộ trình học tập bằng AI",
+      "started": "Đang kết nối với dịch vụ AI...",
+      "generating": "Đang phân tích tài liệu và dựng lộ trình...",
+      "completed": "Tạo lộ trình học tập thành công!",
+      "failed": "Tạo lộ trình học tập thất bại. Vui lòng thử lại."
+    },
+    "validation": {
+      "nameRequired": "Vui lòng nhập tên",
+      "resourceRequired": "Vui lòng chọn tài liệu tham chiếu"
+    },
+    "detail": {
+      "title": "Lộ trình: {{name}}",
+      "close": "Đóng",
+      "markdownTab": "Nội dung lộ trình",
+      "mermaidTab": "Biểu đồ trực quan"
+    }
+  },
+  "changePassword": {
+    "menuItem": "Đổi mật khẩu",
+    "title": "Đổi mật khẩu",
+    "currentPasswordLabel": "Mật khẩu hiện tại",
+    "currentPasswordPlaceholder": "Nhập mật khẩu hiện tại",
+    "newPasswordLabel": "Mật khẩu mới",
+    "newPasswordPlaceholder": "Nhập mật khẩu mới",
+    "confirmPasswordLabel": "Xác nhận mật khẩu mới",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+    "submit": "Đổi mật khẩu",
+    "cancel": "Hủy",
+    "successMessage": "Đổi mật khẩu thành công!",
+    "errorMessage": "Đổi mật khẩu thất bại. Vui lòng kiểm tra mật khẩu hiện tại và thử lại."
+  },
+  "apiKey": {
+    "title": "Quản lý API Key",
+    "create": "Tạo API Key",
+    "createTitle": "Tạo API Key",
+    "successTitle": "Đã tạo API Key",
+    "successWarning": "Vui lòng sao chép API key này ngay bây giờ. Vì lý do bảo mật, bạn sẽ không thể nhìn thấy lại nó.",
+    "copyBtn": "Sao chép",
+    "copied": "Đã sao chép!",
+    "closeBtn": "Đóng",
+    "deleteTitle": "Thu hồi API Key",
+    "deleteConfirm": "Bạn có chắc chắn muốn thu hồi API key \"{{name}}\"? Sau khi thu hồi, mọi yêu cầu sử dụng key này sẽ thất bại. Hành động này không thể hoàn tác.",
+    "deleteBtn": "Thu hồi",
+    "empty": "Chưa có API key nào. Hãy tạo một key để truy cập API!",
+    "table": {
+      "name": "Tên",
+      "lastFourChars": "API Key",
+      "status": "Trạng thái",
+      "createdAt": "Ngày tạo",
+      "expiresAt": "Ngày hết hạn",
+      "actions": "Thao tác"
+    },
+    "form": {
+      "name": "Tên API Key",
+      "namePlaceholder": "Ví dụ: Key phát triển, Script tự động",
+      "expiration": "Thời hạn",
+      "expiration30": "30 ngày",
+      "expiration60": "60 ngày",
+      "expiration90": "90 ngày",
+      "expiration365": "365 ngày",
+      "expirationDays": "Số ngày hết hạn",
+      "expirationCustom": "Tự chọn...",
+      "cancel": "Hủy",
+      "save": "Tạo"
+    },
+    "validation": {
+      "nameRequired": "Vui lòng nhập tên",
+      "nameTooLong": "Tên không được vượt quá 100 ký tự",
+      "expirationRequired": "Vui lòng nhập số ngày hết hạn",
+      "expirationRange": "Số ngày hết hạn phải nằm trong khoảng từ 1 đến 365 ngày"
+    }
+  },
+  "notifications": {
+    "success": "Thành công",
+    "error": "Lỗi",
+    "mentor": {
+      "createSuccess": "Tạo cố vấn thành công!",
+      "createError": "Tạo cố vấn thất bại.",
+      "updateSuccess": "Cập nhật cố vấn thành công!",
+      "updateError": "Cập nhật cố vấn thất bại.",
+      "deleteSuccess": "Xóa cố vấn thành công!",
+      "deleteError": "Xóa cố vấn thất bại."
+    },
+    "resource": {
+      "uploadSuccess": "Tải lên tài liệu thành công!",
+      "uploadError": "Tải lên tài liệu thất bại.",
+      "updateSuccess": "Cập nhật tài liệu thành công!",
+      "updateError": "Cập nhật tài liệu thất bại.",
+      "deleteSuccess": "Xóa tài liệu thành công!",
+      "deleteError": "Xóa tài liệu thất bại.",
+      "downloadError": "Tải tài liệu thất bại."
+    },
+    "quiz": {
+      "createSuccess": "Tạo bài trắc nghiệm thành công!",
+      "createError": "Tạo bài trắc nghiệm thất bại.",
+      "updateSuccess": "Cập nhật bài trắc nghiệm thành công!",
+      "updateError": "Cập nhật bài trắc nghiệm thất bại.",
+      "deleteSuccess": "Xóa bài trắc nghiệm thành công!",
+      "deleteError": "Xóa bài trắc nghiệm thất bại.",
+      "submitSuccess": "Nộp bài trắc nghiệm thành công!",
+      "submitError": "Nộp bài trắc nghiệm thất bại.",
+      "loadQuestionsError": "Tải danh sách câu hỏi thất bại."
+    },
+    "roadmap": {
+      "deleteSuccess": "Xóa lộ trình học tập thành công!",
+      "deleteError": "Xóa lộ trình học tập thất bại."
+    },
+    "apiKey": {
+      "createSuccess": "Tạo API key thành công!",
+      "createError": "Tạo API key thất bại.",
+      "deleteSuccess": "Thu hồi API key thành công!",
+      "deleteError": "Thu hồi API key thất bại."
+    }
+  }
+}

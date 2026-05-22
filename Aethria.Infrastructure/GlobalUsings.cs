@@ -1,0 +1,9 @@
+global using Aethria.Domain.Common;
+global using Aethria.Domain.Entities;
+global using Aethria.Domain.Repositories;
+global using Aethria.Domain.ValueObjects;
+global using Aethria.Infrastructure.Configuration;
+global using Aethria.Infrastructure.Persistence;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Options;

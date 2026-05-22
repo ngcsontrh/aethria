@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE" />
+    <File Path="NOTICE" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Aethria.Api/Aethria.Api.csproj" />
+  <Project Path="Aethria.AppHost/Aethria.AppHost.csproj" />
+  <Project Path="Aethria.Application/Aethria.Application.csproj" Id="43a96911-0dba-4126-a20f-579551854754" />
+  <Project Path="Aethria.Domain/Aethria.Domain.csproj" Id="7dda317f-f0f8-4da6-bb7d-c1ec9abe2e6e" />
+  <Project Path="Aethria.Infrastructure/Aethria.Infrastructure.csproj" Id="ad331a17-72e9-4adc-a361-204b7d8bf9aa" />
+  <Project Path="Aethria.McpServer/Aethria.McpServer.csproj" />
+  <Project Path="Aethria.ServiceDefaults/Aethria.ServiceDefaults.csproj" />
+  <Project Path="aethria.web/aethria.web.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>b9572d46-5a75-4205-bbaa-b4ba13047fde</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DispatchR.Mediator.Abstractions" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aethria.Application\Aethria.Application.csproj" />
+    <ProjectReference Include="..\Aethria.Infrastructure\Aethria.Infrastructure.csproj" />
+    <ProjectReference Include="..\Aethria.ServiceDefaults\Aethria.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

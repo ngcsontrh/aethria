@@ -1,0 +1,10 @@
+global using Aethria.Application.Abstractions.Identity;
+global using Aethria.Application.Abstractions.Persistence;
+global using Aethria.Application.ErrorTypes;
+global using Aethria.Application.Models;
+global using Aethria.Domain.Entities;
+global using Aethria.Domain.Repositories;
+global using Aethria.Domain.ValueObjects;
+global using DispatchR.Abstractions.Send;
+global using FluentResults;
+global using FluentValidation;

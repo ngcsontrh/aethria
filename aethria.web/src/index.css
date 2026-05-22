@@ -1,0 +1,163 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+:root {
+  --sans:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --heading:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  font-family: var(--sans);
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.selector-card {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease !important;
+}
+
+.selector-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mantine-shadow-sm) !important;
+  border-color: var(--mantine-color-blue-filled) !important;
+}
+
+/* Elegant Sidebar NavLinks */
+.sidebar-nav-link {
+  border-radius: 10px !important;
+  margin-bottom: 5px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Smooth micro-animation hover */
+.sidebar-nav-link:hover {
+  transform: translateX(3px);
+}
+
+/* Custom Active Styling with soft shadow and vibrant indicators */
+.sidebar-nav-link[data-active="true"] {
+  background-color: var(--mantine-color-blue-light) !important;
+  color: var(--mantine-color-blue-light-color) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px -2px rgba(28, 126, 214, 0.12) !important;
+}
+
+[data-mantine-color-scheme="dark"] .sidebar-nav-link[data-active="true"] {
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Markdown Content Styling */
+.markdown-content {
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+  color: var(--mantine-color-text);
+}
+.markdown-content h1 {
+  font-size: 1.6rem;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  padding-bottom: 0.3rem;
+}
+.markdown-content h2 {
+  font-size: 1.4rem;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  padding-bottom: 0.2rem;
+}
+.markdown-content h3 {
+  font-size: 1.2rem;
+}
+.markdown-content p {
+  margin-bottom: 1rem;
+}
+.markdown-content ul,
+.markdown-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+.markdown-content li {
+  margin-bottom: 0.4rem;
+}
+.markdown-content code {
+  font-family: var(--mantine-font-family-monospace, monospace);
+  background-color: var(--mantine-color-gray-light);
+  color: var(--mantine-color-red-filled);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+[data-mantine-color-scheme="dark"] .markdown-content code {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ff8787;
+}
+.markdown-content pre {
+  background-color: var(--mantine-color-gray-light);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+[data-mantine-color-scheme="dark"] .markdown-content pre {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--mantine-color-default-border);
+}
+.markdown-content pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9em;
+}
+.markdown-content blockquote {
+  border-left: 4px solid var(--mantine-color-blue-filled);
+  padding-left: 1rem;
+  margin-left: 0;
+  color: var(--mantine-color-dimmed);
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid var(--mantine-color-default-border);
+  padding: 8px;
+  text-align: left;
+}
+.markdown-content th {
+  background-color: var(--mantine-color-gray-light);
+  font-weight: 600;
+}
+[data-mantine-color-scheme="dark"] .markdown-content th {
+  background-color: rgba(255, 255, 255, 0.03);
+}
