@@ -1,26 +1,43 @@
 # Aethria
 
-Aethria is a platform designed for mentorship, learning pathways, and intelligent resource management. It provides tools for team onboarding, knowledge sharing, and interactive learning.
+Aethria is an AI-assisted learning platform for managing resources, mentors, quizzes, roadmaps, and chat-based guidance.
 
-## Key Features
+## Architecture
 
-- **Mentorship Management**: Create, assign, and manage mentors to facilitate structured guidance.
-- **Learning Roadmaps**: Define and track learning pathways for users to ensure consistent progression.
-- **Quizzes**: Evaluate knowledge and progress through integrated quiz functionalities.
-- **Intelligent Resource Management**: Upload and process documents (PDF, Text) with AI-powered document chat and extraction capabilities.
-- **Team Onboarding**: Manage onboarding processes and view comprehensive data grids and exports.
+The solution follows a Clean Architecture style on .NET 10, with .NET Aspire orchestrating the API, MCP server, and web client.
 
-## Technical Architecture
+- `Aethria.Domain`: core entities, value objects, events, and repository contracts.
+- `Aethria.Application`: use cases, validation, abstractions, and CQRS-style commands/queries.
+- `Aethria.Infrastructure`: EF Core persistence, Identity, Azure Blob Storage, embeddings, chunking, and AI agent integrations.
+- `Aethria.Api`: REST endpoints, SignalR hubs, JWT authentication, OpenAPI, and Scalar UI.
+- `Aethria.McpServer`: protected Model Context Protocol server for exposing Aethria tools to AI agents.
+- `Aethria.AppHost`: .NET Aspire host for local distributed orchestration.
+- `aethria.web`: React 19 + TypeScript + Vite SPA using Mantine, TanStack Router, React Query, SignalR, and i18next.
 
-The project is built on the modern **.NET ecosystem**, leveraging **.NET Aspire** for distributed application orchestration, **Azure** cloud services, and the **Microsoft AI Agent Framework** for intelligent capabilities.
+## Main Capabilities
 
-### Core Platform
-- **Aethria.Api**: The presentation layer providing RESTful endpoints.
-- **Aethria.Application**: Core business logic, CQRS use cases (Commands/Queries), and service abstractions.
-- **Aethria.Domain**: Core domain models, entities, and repositories.
-- **Aethria.Infrastructure**: Data access, integrations, and external service implementations.
-- **Aethria.AppHost & ServiceDefaults**: .NET Aspire configuration for service orchestration and telemetry.
-- **Aethria.McpServer**: Model Context Protocol (MCP) server exposing application tools and context for AI agents to consume.
+- Email and Google authentication with refresh tokens.
+- Resource upload, parsing, chunking, storage, search, and resource chat.
+- Mentor creation, validation, and mentor chat.
+- AI-generated learning roadmaps with streaming updates.
+- Quiz creation, AI quiz generation, attempts, submission history, and review.
+- API key management for MCP access.
 
-### Client Application
-- **aethria.web**: A modern, responsive Single Page Application (SPA) built with **Angular 21**. It connects to the Aethria APIs to deliver a seamless user experience.
+## Run Locally
+
+Prerequisites: .NET 10 SDK and Node.js.
+
+```bash
+dotnet restore
+dotnet run --project Aethria.AppHost
+```
+
+For the web client only:
+
+```bash
+cd aethria.web
+npm install
+npm run dev
+```
+
+Configuration is supplied through Aspire parameters and the `appsettings*.json` files for database, Azure Storage, Azure AI Foundry/OpenAI, Tavily, and authentication settings.
