@@ -1,73 +1,41 @@
-# React + TypeScript + Vite
+# Aethria Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend SPA for Aethria, built with React 19, TypeScript, Vite, Mantine, TanStack Router, TanStack Query, SignalR, and i18next.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```text
+aethria.web/
+├── public/                  # Static public assets
+├── src/
+│   ├── assets/              # Bundled images and UI assets
+│   ├── components/          # Reusable UI components
+│   ├── i18n/                # i18next setup and locale files
+│   ├── pages/               # Feature pages and page-scoped hooks
+│   ├── services/            # API clients, auth helpers, and streaming clients
+│   ├── index.css            # Global styles
+│   ├── main.tsx             # React application bootstrap
+│   └── router.tsx           # TanStack Router route tree
+├── index.html
+├── package.json
+└── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Main Features
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+- Email and Google authentication.
+- Resource, mentor, quiz, roadmap, API key, chat, and notification screens.
+- Localized English and Vietnamese UI.
+- React Query powered API state and SignalR streaming updates.
+- Mantine component system with light/dark color scheme support.
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
 ```
+
+Use `npm run dev` for local development. Use `npm run build` before shipping frontend changes.
