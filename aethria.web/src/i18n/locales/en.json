@@ -66,7 +66,8 @@
       "roadmaps": "Roadmaps",
       "mentors": "Mentors",
       "resources": "Resources",
-      "apiKeys": "API Keys"
+      "apiKeys": "API Keys",
+      "notifications": "Notifications"
     },
     "user": {
       "account": "Account",
@@ -410,6 +411,62 @@
       "createError": "Failed to create API key.",
       "deleteSuccess": "API key revoked successfully!",
       "deleteError": "Failed to revoke API key."
+    },
+    "notification": {
+      "markReadSuccess": "Notification marked as read successfully!",
+      "markReadError": "Failed to mark notification as read."
+    }
+  },
+  "notification": {
+    "title": "Notifications",
+    "empty": "You have no notifications.",
+    "markAsRead": "Mark as read",
+    "markPageRead": "Mark page as read",
+    "readStatus": "Read",
+    "unreadStatus": "Unread",
+    "viewAll": "View all notifications",
+    "filter": {
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "time": {
+      "justNow": "just now",
+      "ago": "ago",
+      "m": "m",
+      "h": "h",
+      "d": "d"
+    },
+    "table": {
+      "name": "Category",
+      "message": "Message",
+      "status": "Status",
+      "createdAt": "Received At",
+      "actions": "Actions"
+    },
+    "items": {
+      "quiz": {
+        "generated": {
+          "title": "Quiz generated",
+          "message": "Your quiz \"{{quizName}}\" has been successfully generated."
+        }
+      },
+      "roadmap": {
+        "generated": {
+          "title": "Roadmap generated",
+          "message": "Your roadmap \"{{roadmapName}}\" has been successfully generated."
+        }
+      },
+      "resource": {
+        "created": {
+          "title": "Resource uploaded",
+          "message": "Your resource \"{{resourceName}}\" has been successfully uploaded."
+        }
+      },
+      "fallback": {
+        "title": "Notification",
+        "message": "You have a new notification."
+      }
     }
   }
 }

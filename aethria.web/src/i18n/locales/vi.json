@@ -66,7 +66,8 @@
       "roadmaps": "Lộ trình học tập",
       "mentors": "Quản lý Cố vấn",
       "resources": "Quản lý Tài liệu",
-      "apiKeys": "API Keys"
+      "apiKeys": "API Keys",
+      "notifications": "Thông báo"
     },
     "user": {
       "account": "Tài khoản",
@@ -410,6 +411,62 @@
       "createError": "Tạo API key thất bại.",
       "deleteSuccess": "Thu hồi API key thành công!",
       "deleteError": "Thu hồi API key thất bại."
+    },
+    "notification": {
+      "markReadSuccess": "Đánh dấu đã đọc thông báo thành công!",
+      "markReadError": "Đánh dấu đã đọc thông báo thất bại."
+    }
+  },
+  "notification": {
+    "title": "Thông báo",
+    "empty": "Bạn không có thông báo nào.",
+    "markAsRead": "Đánh dấu đã đọc",
+    "markPageRead": "Đánh dấu trang đã đọc",
+    "readStatus": "Đã đọc",
+    "unreadStatus": "Chưa đọc",
+    "viewAll": "Xem tất cả thông báo",
+    "filter": {
+      "all": "Tất cả",
+      "unread": "Chưa đọc",
+      "read": "Đã đọc"
+    },
+    "time": {
+      "justNow": "vừa xong",
+      "ago": "trước",
+      "m": "phút",
+      "h": "giờ",
+      "d": "ngày"
+    },
+    "table": {
+      "name": "Phân loại",
+      "message": "Nội dung",
+      "status": "Trạng thái",
+      "createdAt": "Thời gian nhận",
+      "actions": "Thao tác"
+    },
+    "items": {
+      "quiz": {
+        "generated": {
+          "title": "Đã tạo bài trắc nghiệm",
+          "message": "Bài trắc nghiệm \"{{quizName}}\" của bạn đã được tạo thành công."
+        }
+      },
+      "roadmap": {
+        "generated": {
+          "title": "Đã tạo lộ trình học tập",
+          "message": "Lộ trình học tập \"{{roadmapName}}\" của bạn đã được tạo thành công."
+        }
+      },
+      "resource": {
+        "created": {
+          "title": "Đã tải lên tài liệu",
+          "message": "Tài liệu \"{{resourceName}}\" của bạn đã được tải lên thành công."
+        }
+      },
+      "fallback": {
+        "title": "Thông báo",
+        "message": "Bạn có một thông báo mới."
+      }
     }
   }
 }

@@ -469,3 +469,14 @@ export interface GenerateAIRoadmapStreamEvent {
   message: string;
   roadmapId?: string;
 }
+
+export interface NotificationPageItemResponse {
+  id: string;
+  type: string;
+  data: Record<string, string>;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type GetPageNotificationsResponse = PagedResponse<NotificationPageItemResponse>;

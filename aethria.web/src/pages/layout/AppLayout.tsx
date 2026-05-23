@@ -13,7 +13,14 @@ import {
   SegmentedControl,
   useComputedColorScheme,
   useMantineColorScheme,
+  Popover,
+  Indicator,
+  Stack,
+  Skeleton,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
+import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   MessageSquare,
@@ -27,11 +34,19 @@ import {
   FileQuestion,
   Map,
   KeyRound,
+  Bell,
+  Check,
 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getPageNotifications, markNotificationAsRead } from "../../services";
 import { useTranslation as useI18nTranslation } from "react-i18next";
 import { useAppLayout } from "./useAppLayout";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 import logoIcon from "../../assets/logo-icon.png";
+import {
+  formatNotificationRelativeTime,
+  getNotificationText,
+} from "../notification/notificationDisplay";
 
 export default function AppLayout() {
   const {
@@ -60,6 +75,37 @@ export default function AppLayout() {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const queryClient = useQueryClient();
+  const [popoverOpened, setPopoverOpened] = useState(false);
+  const [markingReadId, setMarkingReadId] = useState<string | null>(null);
+
+  const headerNotificationsQuery = useQuery({
+    queryKey: ["notifications", "header"],
+    queryFn: ({ signal }) => getPageNotifications(1, 5, undefined, signal),
+    enabled: !!user,
+  });
+
+  const headerNotifications = headerNotificationsQuery.data?.items ?? [];
+  const headerNotificationsLoading = headerNotificationsQuery.isLoading;
+  const unreadCount = headerNotificationsQuery.data?.items.filter((n) => !n.isRead).length ?? 0;
+
+  const markAsReadMutation = useMutation({
+    mutationFn: (id: string) => markNotificationAsRead(id),
+    onMutate: (id) => {
+      setMarkingReadId(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onSettled: () => {
+      setMarkingReadId(null);
+    },
+  });
+
+  const handleHeaderMarkAsRead = (id: string) => {
+    markAsReadMutation.mutate(id);
+  };
 
   const chatSubItems = [
     {
@@ -145,7 +191,140 @@ export default function AppLayout() {
 
           {}
           <Group gap={8}>
-            {}
+            {/* Notification Bell Menu/Popover */}
+            <Popover
+              width={320}
+              position="bottom-end"
+              withArrow
+              shadow="md"
+              opened={popoverOpened}
+              onChange={setPopoverOpened}
+            >
+              <Popover.Target>
+                <Indicator
+                  disabled={unreadCount === 0}
+                  color="red"
+                  size={16}
+                  withBorder
+                  label={unreadCount > 9 ? "9+" : unreadCount}
+                >
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    radius="xl"
+                    size="lg"
+                    onClick={() => setPopoverOpened((o) => !o)}
+                  >
+                    <Bell size={20} />
+                  </ActionIcon>
+                </Indicator>
+              </Popover.Target>
+              <Popover.Dropdown p="xs">
+                <Box
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <Text fw={700} size="sm">
+                    {t("notification.title")}
+                  </Text>
+                </Box>
+                <Divider mb="xs" />
+                <ScrollArea style={{ maxHeight: 300 }} type="hover">
+                  {headerNotificationsLoading && headerNotifications.length === 0 ? (
+                    <Stack gap="xs">
+                      <Skeleton height={40} radius="sm" />
+                      <Skeleton height={40} radius="sm" />
+                      <Skeleton height={40} radius="sm" />
+                    </Stack>
+                  ) : headerNotifications.length === 0 ? (
+                    <Text size="xs" c="dimmed" ta="center" py="md">
+                      {t("notification.empty")}
+                    </Text>
+                  ) : (
+                    <Stack gap="xs">
+                      {headerNotifications.map((n) => (
+                        (() => {
+                          const text = getNotificationText(n, t);
+
+                          return (
+                            <Box
+                              key={n.id}
+                              p="xs"
+                              style={{
+                                backgroundColor: n.isRead
+                                  ? "transparent"
+                                  : "var(--mantine-color-blue-light)",
+                                borderRadius: "var(--mantine-radius-sm)",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: "8px",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => {
+                                if (!n.isRead) {
+                                  handleHeaderMarkAsRead(n.id);
+                                }
+                              }}
+                            >
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <Text size="xs" fw={700} c={n.isRead ? "dimmed" : "blue"}>
+                                  {text.title}
+                                </Text>
+                                <Text size="xs" style={{ wordBreak: "break-word" }} lineClamp={2}>
+                                  {text.message}
+                                </Text>
+                                <Text size="10px" c="dimmed">
+                                  {formatNotificationRelativeTime(n.createdAt, currentLanguage)}
+                                </Text>
+                              </div>
+                              {!n.isRead && (
+                                <Tooltip label={t("notification.markAsRead")}>
+                                  <ActionIcon
+                                    size="xs"
+                                    variant="subtle"
+                                    color="blue"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleHeaderMarkAsRead(n.id);
+                                    }}
+                                    loading={markingReadId === n.id}
+                                  >
+                                    <Check size={12} />
+                                  </ActionIcon>
+                                </Tooltip>
+                              )}
+                            </Box>
+                          );
+                        })()
+                      ))}
+                    </Stack>
+                  )}
+                </ScrollArea>
+                <Divider my="xs" />
+                <UnstyledButton
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    textAlign: "center",
+                    padding: "4px 0",
+                  }}
+                  onClick={() => {
+                    setPopoverOpened(false);
+                    navigate({ to: "/notifications" });
+                  }}
+                >
+                  <Text size="xs" color="blue" fw={500}>
+                    {t("notification.viewAll")}
+                  </Text>
+                </UnstyledButton>
+              </Popover.Dropdown>
+            </Popover>
+
             <Menu
               shadow="md"
               width={240}

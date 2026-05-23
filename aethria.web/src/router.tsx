@@ -16,6 +16,7 @@ import ResourcePage from "./pages/resource/ResourcePage";
 import QuizPage from "./pages/quiz/QuizPage";
 import RoadmapPage from "./pages/roadmap/RoadmapPage";
 import ApiKeyPage from "./pages/apiKey/ApiKeyPage";
+import NotificationPage from "./pages/notification/NotificationPage";
 import { isAuthenticated } from "./services";
 
 const rootRoute = createRootRoute({
@@ -147,6 +148,15 @@ const apiKeyRoute = createRoute({
   }),
 });
 
+const notificationRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/notifications",
+  component: () => <NotificationPage />,
+  head: () => ({
+    meta: [{ title: `${i18n.t("layout.nav.notifications")} | Aethria` }],
+  }),
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   authRegisterRoute,
@@ -161,6 +171,7 @@ const routeTree = rootRoute.addChildren([
     quizRoute,
     roadmapRoute,
     apiKeyRoute,
+    notificationRoute,
   ]),
 ]);
 

@@ -9,3 +9,4 @@ export * from "./api/mentor";
 export * from "./api/quiz";
 export * from "./api/resource";
 export * from "./api/roadmap";
+export * from "./api/notification";
