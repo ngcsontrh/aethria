@@ -9,9 +9,9 @@ const string McpEndpointPattern = "/mcp";
 
 builder.AddServiceDefaults();
 
-builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddMcpInfrastructureServices(builder.Configuration);
 
-builder.Services.AddApplicationServices();
+builder.Services.AddMcpApplicationServices();
 
 builder.Services.AddAuthentication(options =>
 {

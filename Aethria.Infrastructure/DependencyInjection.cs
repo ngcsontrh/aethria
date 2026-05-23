@@ -1,12 +1,3 @@
-using Aethria.Application.Abstractions.Chunking;
-using Aethria.Application.Abstractions.Embedding;
-using Aethria.Application.Abstractions.Identity;
-using Aethria.Application.Abstractions.Persistence;
-using Aethria.Application.Abstractions.Storage;
-using Aethria.Application.UseCases.Chat.Contracts;
-using Aethria.Application.UseCases.Mentors;
-using Aethria.Application.UseCases.Quizzes.CreateAIQuizStream;
-using Aethria.Application.UseCases.Roadmaps.GenerateAIRoadmapStream;
 using Aethria.Infrastructure.AgentFramework.Chat;
 using Aethria.Infrastructure.AgentFramework.Mentors;
 using Aethria.Infrastructure.AgentFramework.Quiz;
@@ -18,8 +9,6 @@ using Aethria.Infrastructure.Identity;
 using Aethria.Infrastructure.Repositories;
 using Aethria.Infrastructure.Storage;
 using Azure.Storage.Blobs;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Tavily;
 
 namespace Aethria.Infrastructure;
@@ -29,21 +18,51 @@ public static class DependencyInjection
     /// <summary>
     /// Registers all infrastructure services. Use this for projects that need the full stack.
     /// </summary>
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApiInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddInfrastructurePersistence(configuration);
-        services.AddInfrastructureIdentity(configuration);
-        services.AddInfrastructureStorage(configuration);
-        services.AddInfrastructureAI(configuration);
+        services.AddIdentityInfrastructure(configuration);
+        services.AddStorageInfrastructure(configuration);
+        services.AddFullAiInfrastructure(configuration);
 
         return services;
     }
 
     /// <summary>
-    /// Registers persistence services: DbContext, Repositories, UnitOfWork, Domain events.
-    /// Sufficient for worker services that only need database access.
+    /// Registers only the infrastructure services required by the MCP server.
+    /// </summary>
+    public static IServiceCollection AddMcpInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddAppDbContext(configuration);
+        services.AddUnitOfWorkAndDomainEvents();
+        services.AddApiKeyPersistence();
+        services.AddResourcePersistence();
+        services.AddChatSessionPersistence();
+        services.AddResourceChatAiInfrastructure(configuration);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers persistence services: DbContext, repositories, UnitOfWork, and domain events.
     /// </summary>
     public static IServiceCollection AddInfrastructurePersistence(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddAppDbContext(configuration);
+        services.AddUnitOfWorkAndDomainEvents();
+        services.AddChatSessionPersistence();
+        services.AddMentorPersistence();
+        services.AddNotificationPersistence();
+        services.AddResourcePersistence();
+        services.AddRoadmapPersistence();
+        services.AddQuizPersistence();
+        services.AddApiKeyPersistence();
+        services.AddRefreshTokenPersistence();
+
+        return services;
+    }
+
+    public static IServiceCollection AddAppDbContext(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
@@ -63,27 +82,72 @@ public static class DependencyInjection
                 });
         });
 
+        return services;
+    }
+
+    public static IServiceCollection AddUnitOfWorkAndDomainEvents(this IServiceCollection services)
+    {
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-
-        services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
-        services.AddScoped<IMentorRepository, MentorRepository>();
-        services.AddScoped<INotificationRepository, NotificationRepository>();
-        services.AddScoped<IResourceRepository, ResourceRepository>();
-        services.AddScoped<IResourceChunkRepository, ResourceChunkRepository>();
-        services.AddScoped<IRoadmapRepository, RoadmapRepository>();
-        services.AddScoped<IQuizRepository, QuizRepository>();
-        services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
-        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddChatSessionPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddMentorPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IMentorRepository, MentorRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddNotificationPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddResourcePersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IResourceRepository, ResourceRepository>();
+        services.AddScoped<IResourceChunkRepository, ResourceChunkRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddRoadmapPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IRoadmapRepository, RoadmapRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddQuizPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IQuizRepository, QuizRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddApiKeyPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddRefreshTokenPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         return services;
     }
 
     /// <summary>
     /// Registers identity and authentication services.
     /// </summary>
-    public static IServiceCollection AddInfrastructureIdentity(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddIdentityInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddOptions<AuthOptions>()
             .Bind(configuration.GetSection(AuthOptions.SectionName))
@@ -101,8 +165,7 @@ public static class DependencyInjection
                 "Auth:AccessTokenMinutes must be greater than 0.")
             .Validate(
                 options => options.RefreshTokenDays > 0,
-                "Auth:RefreshTokenDays must be greater than 0.")
-            .ValidateOnStart();
+                "Auth:RefreshTokenDays must be greater than 0.");
 
         services.AddIdentityCore<AppUser>(options =>
         {
@@ -126,7 +189,7 @@ public static class DependencyInjection
     /// <summary>
     /// Registers Azure Blob Storage services.
     /// </summary>
-    public static IServiceCollection AddInfrastructureStorage(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddStorageInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
 
@@ -142,17 +205,29 @@ public static class DependencyInjection
     }
 
     /// <summary>
-    /// Registers AI services: Embeddings, Chunking, Agents, Tavily, Azure OpenAI.
+    /// Registers the AI services needed by resource chat.
     /// </summary>
-    public static IServiceCollection AddInfrastructureAI(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddResourceChatAiInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<FoundryOptions>(configuration.GetSection(FoundryOptions.SectionName));
+
+        services.AddSingleton<IEmbeddingService, AzureOpenAIEmbeddingService>();
+        services.AddKeyedScoped<IChatAgent, ResourceChatAgent>("resource-chat");
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers AI services: Embeddings, Chunking, Agents, Tavily, Azure OpenAI.
+    /// </summary>
+    public static IServiceCollection AddFullAiInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddResourceChatAiInfrastructure(configuration);
+
         services.Configure<TavilyOptions>(configuration.GetSection(TavilyOptions.SectionName));
 
         services.AddSingleton<ITokenCountingService, OpenAITokenCountingService>();
         services.AddSingleton<ITextChunkingService, OpenAITextChunkingService>();
-
-        services.AddSingleton<IEmbeddingService, AzureOpenAIEmbeddingService>();
 
         services.AddSingleton(sp =>
         {
@@ -162,11 +237,11 @@ public static class DependencyInjection
 
         services.AddKeyedScoped<IChatAgent, GeneralChatAgent>("general-chat");
         services.AddKeyedScoped<IChatAgent, MentorChatAgent>("mentor-chat");
-        services.AddKeyedScoped<IChatAgent, ResourceChatAgent>("resource-chat");
         services.AddScoped<IMentorValidatorAgent, MentorValidatorAgent>();
         services.AddScoped<IAIQuizGenerationWorkflow, QuizAgentWorkflow>();
         services.AddScoped<IAIRoadmapGenerationAgent, AIRoadmapGenerationAgent>();
 
         return services;
     }
+
 }

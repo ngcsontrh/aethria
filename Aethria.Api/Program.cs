@@ -20,8 +20,8 @@ builder.AddOpenTelemetrySources(
         AgentFrameworkSourceName,
         AgentFrameworkWorkflowsSourceName));
 
-builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddApplicationServices();
+builder.Services.AddApiInfrastructureServices(builder.Configuration);
+builder.Services.AddApiApplicationServices();
 builder.Services.AddSignalR();
 builder.Services.AddOpenApi();
 builder.Services.AddValidation();
