@@ -14,7 +14,7 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
     private readonly ITextChunkingService _textChunkingService;
     private readonly IEmbeddingService _embeddingService;
     private readonly IResourceRepository _resourceRepository;
-    private readonly IResourceChunkRepository _resourceChunkRepository;
+    private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateResourceCommandHandler(
@@ -23,7 +23,7 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
         ITextChunkingService textChunkingService,
         IEmbeddingService embeddingService,
         IResourceRepository resourceRepository,
-        IResourceChunkRepository resourceChunkRepository,
+        IResourceChunkVectorStore resourceChunkVectorStore,
         IUnitOfWork unitOfWork)
     {
         _fileStorageService = fileStorageService;
@@ -31,7 +31,7 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
         _textChunkingService = textChunkingService;
         _embeddingService = embeddingService;
         _resourceRepository = resourceRepository;
-        _resourceChunkRepository = resourceChunkRepository;
+        _resourceChunkVectorStore = resourceChunkVectorStore;
         _unitOfWork = unitOfWork;
     }
 
@@ -39,7 +39,8 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
 
     public async ValueTask<Result<Guid>> Handle(CreateResourceCommand command, CancellationToken cancellationToken)
     {
-        var trimmedName = command.Name?.Trim() ?? string.Empty;
+        var trimmedName = TextSanitizationUtils.RemoveNullCharacters(command.Name).Trim();
+        var description = TextSanitizationUtils.RemoveNullCharactersOrNull(command.Description);
 
         var contentType = command.ContentType.ToLowerInvariant();
         var fileExtension = Path.GetExtension(command.FileName).ToLowerInvariant();
@@ -58,6 +59,7 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
             extractedText = TxtParsingUtils.ExtractTextFromTxt(command.FileStream);
         }
 
+        extractedText = TextSanitizationUtils.RemoveNullCharacters(extractedText);
         if (string.IsNullOrWhiteSpace(extractedText))
         {
             return Result.Fail(new ValidationError("File does not contain readable text."));
@@ -65,7 +67,12 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
 
         var chunks = await _textChunkingService.ChunkTextAsync(
             extractedText,
-            new ChunkingOptions(),
+            new ChunkingOptions
+            {
+                MaxTokensPerChunk = 1_200,
+                OverlapTokens = 200,
+                MaxTokensPerLine = 600
+            },
             cancellationToken);
         if (chunks.Count == 0)
         {
@@ -90,7 +97,7 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
         {
             Id = resourceId,
             Name = trimmedName,
-            Description = command.Description,
+            Description = description,
             FileUri = fileUri,
             FileType = command.ContentType,
             FileSize = command.FileSize,
@@ -100,23 +107,19 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
             UpdatedAt = now
         };
 
-        var resourceChunks = new List<ResourceChunk>();
+        var resourceChunks = new List<ResourceChunkVectorInput>();
         for (var i = 0; i < chunks.Count; i++)
         {
-            resourceChunks.Add(new ResourceChunk
-            {
-                Id = Guid.NewGuid(),
-                ResourceId = resource.Id,
-                ChunkIndex = i,
-                Content = chunks[i].Content,
-                Embedding = embeddings[i],
-                CreatedAt = now,
-                UpdatedAt = now
-            });
+            resourceChunks.Add(new ResourceChunkVectorInput(
+                Id: Guid.NewGuid(),
+                ResourceId: resource.Id,
+                ChunkIndex: i,
+                Content: chunks[i].Content,
+                Embedding: embeddings[i]));
         }
 
         await _resourceRepository.AddAsync(resource, cancellationToken);
-        await _resourceChunkRepository.AddRangeAsync(resourceChunks, cancellationToken);
+        await _resourceChunkVectorStore.UpsertAsync(resource.Id, resourceChunks, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var completedEvent = new ResourceCreatedEvent(resourceId, command.UserId);

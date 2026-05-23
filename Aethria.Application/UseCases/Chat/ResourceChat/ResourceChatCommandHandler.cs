@@ -10,17 +10,20 @@ public sealed class ResourceChatCommandHandler : IStreamRequestHandler<ResourceC
     private static readonly TimeSpan _firstTokenTimeout = TimeSpan.FromSeconds(45);
     private static readonly TimeSpan _maxStreamDuration = TimeSpan.FromMinutes(5);
     private readonly IResourceRepository _resourceRepository;
+    private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
     private readonly IChatSessionRepository _chatSessionRepository;
     private readonly IChatAgent _resourceChatAgent;
     private readonly IUnitOfWork _unitOfWork;
 
     public ResourceChatCommandHandler(
         IResourceRepository resourceRepository,
+        IResourceChunkVectorStore resourceChunkVectorStore,
         IChatSessionRepository chatSessionRepository,
         [FromKeyedServices("resource-chat")] IChatAgent resourceChatAgent,
         IUnitOfWork unitOfWork)
     {
         _resourceRepository = resourceRepository;
+        _resourceChunkVectorStore = resourceChunkVectorStore;
         _chatSessionRepository = chatSessionRepository;
         _resourceChatAgent = resourceChatAgent;
         _unitOfWork = unitOfWork;
@@ -38,7 +41,7 @@ public sealed class ResourceChatCommandHandler : IStreamRequestHandler<ResourceC
             yield break;
         }
 
-        var hasChunks = await _resourceRepository.HasChunksAsync(command.ResourceId, cancellationToken);
+        var hasChunks = await _resourceChunkVectorStore.ExistsByResourceIdAsync(command.ResourceId, cancellationToken);
         if (!hasChunks)
         {
             yield return Result.Fail<ChatStreamResponse>(new ValidationError("Resource is not ready for querying. Please wait for processing to complete."));

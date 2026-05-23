@@ -6,9 +6,9 @@ public sealed class ChunkingOptions
 
     public int MaxTokensPerLine { get; init; } = 300;
 
-    public int MaxTokensPerChunk { get; init; } = 800;
+    public int MaxTokensPerChunk { get; init; } = 1_000;
 
-    public int OverlapTokens { get; init; } = 120;
+    public int OverlapTokens { get; init; } = 200;
 
     public bool TrimChunks { get; init; } = true;
 

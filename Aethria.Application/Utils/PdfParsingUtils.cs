@@ -24,6 +24,7 @@ internal static class PdfParsingUtils
 
         var content = string.Join("\n\n", cleanedPages);
         content = content.Replace("\r\n", "\n");
+        content = TextSanitizationUtils.RemoveNullCharacters(content);
 
         content = Regex.Replace(content, @"(?m)^\s*(Page|Trang)\s+\d+(\s*(of|/)\s*\d+)?\s*$", "", RegexOptions.IgnoreCase);
         content = Regex.Replace(content, @"(?m)^\s*-?\s*\d+\s*-?\s*$", "");

@@ -9,7 +9,4 @@ public interface IResourceRepository
     Task<IReadOnlyList<Resource>> ListBasicByUserIdAsync(Guid userId, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> ExistsByIdAndUserAsync(Guid id, Guid userId, CancellationToken cancellationToken);
-    Task<bool> HasChunksAsync(Guid id, CancellationToken cancellationToken);
-    Task<IReadOnlyList<ResourceChunk>> ListChunksByResourceIdAsync(Guid resourceId, CancellationToken cancellationToken);
-    Task<IReadOnlyList<ResourceChunk>> ListRelevantChunksByResourceIdAsync(Guid resourceId, ReadOnlyMemory<float> embeddings, int topK, CancellationToken cancellationToken);
 }

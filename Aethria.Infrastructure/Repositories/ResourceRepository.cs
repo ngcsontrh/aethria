@@ -1,6 +1,3 @@
-using Pgvector;
-using Pgvector.EntityFrameworkCore;
-
 namespace Aethria.Infrastructure.Repositories;
 
 internal class ResourceRepository : IResourceRepository
@@ -72,30 +69,5 @@ internal class ResourceRepository : IResourceRepository
     {
         return await _dbContext.Resources
             .AnyAsync(r => r.Id == id && r.UserId == userId, cancellationToken);
-    }
-
-    public async Task<bool> HasChunksAsync(Guid id, CancellationToken cancellationToken)
-    {
-        return await _dbContext.ResourceChunks
-            .AnyAsync(c => c.ResourceId == id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<ResourceChunk>> ListChunksByResourceIdAsync(Guid resourceId, CancellationToken cancellationToken)
-    {
-        return await _dbContext.ResourceChunks
-            .Where(c => c.ResourceId == resourceId)
-            .OrderBy(c => c.ChunkIndex)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<ResourceChunk>> ListRelevantChunksByResourceIdAsync(Guid resourceId, ReadOnlyMemory<float> embeddings, int topK, CancellationToken cancellationToken)
-    {
-        var vector = new Vector(embeddings);
-
-        return await _dbContext.ResourceChunks
-            .Where(c => c.ResourceId == resourceId && c.Embedding != null)
-            .OrderBy(c => c.Embedding!.L2Distance(vector))
-            .Take(topK)
-            .ToListAsync(cancellationToken);
     }
 }

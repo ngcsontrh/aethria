@@ -1,4 +1,3 @@
-using Aethria.Application.Abstractions.Embedding;
 using Aethria.Application.UseCases.Chat.Contracts;
 using Azure;
 using Azure.AI.OpenAI;
@@ -16,19 +15,16 @@ namespace Aethria.Infrastructure.AgentFramework.Chat;
 internal sealed class ResourceChatAgent : IChatAgent
 {
     private readonly FoundryOptions _options;
-    private readonly IEmbeddingService _embeddingService;
-    private readonly IResourceRepository _resourceRepository;
+    private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
     private readonly bool _enableSensitiveTelemetry;
 
     public ResourceChatAgent(
         IOptions<FoundryOptions> options,
-        IEmbeddingService embeddingService,
-        IResourceRepository resourceRepository,
+        IResourceChunkVectorStore resourceChunkVectorStore,
         IHostEnvironment hostEnvironment)
     {
         _options = options.Value;
-        _embeddingService = embeddingService;
-        _resourceRepository = resourceRepository;
+        _resourceChunkVectorStore = resourceChunkVectorStore;
         _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
@@ -90,10 +86,8 @@ internal sealed class ResourceChatAgent : IChatAgent
         return AIFunctionFactory.Create(
             method: async ([Description("The search query to find relevant content in the resource. Formulate a clear, specific query based on what information you need.")] string query, CancellationToken cancellationToken) =>
             {
-                var embedding = await _embeddingService.GenerateEmbeddingAsync(query, cancellationToken);
-
-                var chunks = await _resourceRepository.ListRelevantChunksByResourceIdAsync(
-                    resourceId, embedding, topK: 5, cancellationToken);
+                var chunks = await _resourceChunkVectorStore.GetRelevantChunksAsync(
+                    resourceId, query, topK: 5, cancellationToken);
 
                 if (!chunks.Any())
                 {

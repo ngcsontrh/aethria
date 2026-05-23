@@ -26,7 +26,7 @@ internal static class TxtParsingUtils
 
         content = content.Replace("\r\n", "\n").Replace("\r", "\n");
 
-        content = content.Replace("\0", "");
+        content = TextSanitizationUtils.RemoveNullCharacters(content);
 
         content = Regex.Replace(content, @"\n{3,}", "\n\n");
 

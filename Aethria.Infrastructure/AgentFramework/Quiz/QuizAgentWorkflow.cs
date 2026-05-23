@@ -1,4 +1,3 @@
-using Aethria.Application.Abstractions.Embedding;
 using Aethria.Application.UseCases.Quizzes.CreateAIQuizStream;
 using Aethria.Infrastructure.AgentFramework.Quiz.Executors;
 using Azure;
@@ -14,19 +13,16 @@ namespace Aethria.Infrastructure.AgentFramework.Quiz;
 internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
 {
     private readonly FoundryOptions _foundryOptions;
-    private readonly IEmbeddingService _embeddingService;
-    private readonly IResourceRepository _resourceRepository;
+    private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
     private readonly bool _enableSensitiveTelemetry;
 
     public QuizAgentWorkflow(
         IOptions<FoundryOptions> options,
-        IEmbeddingService embeddingService,
-        IResourceRepository resourceRepository,
+        IResourceChunkVectorStore resourceChunkVectorStore,
         IHostEnvironment hostEnvironment)
     {
         _foundryOptions = options.Value;
-        _embeddingService = embeddingService;
-        _resourceRepository = resourceRepository;
+        _resourceChunkVectorStore = resourceChunkVectorStore;
         _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
@@ -61,8 +57,7 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
         var reviewEditExecutor = new QuizReviewEditExecutor(
             reviewerChatClient,
             editorChatClient,
-            _embeddingService,
-            _resourceRepository,
+            _resourceChunkVectorStore,
             _enableSensitiveTelemetry);
         var finalizerExecutor = new QuizFinalizerExecutor();
 

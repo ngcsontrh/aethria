@@ -8,7 +8,9 @@ using Aethria.Infrastructure.Embedding;
 using Aethria.Infrastructure.Identity;
 using Aethria.Infrastructure.Repositories;
 using Aethria.Infrastructure.Storage;
+using Aethria.Infrastructure.VectorSearch;
 using Azure.Storage.Blobs;
+using Cohere;
 using Tavily;
 
 namespace Aethria.Infrastructure;
@@ -114,7 +116,6 @@ public static class DependencyInjection
     public static IServiceCollection AddResourcePersistence(this IServiceCollection services)
     {
         services.AddScoped<IResourceRepository, ResourceRepository>();
-        services.AddScoped<IResourceChunkRepository, ResourceChunkRepository>();
         return services;
     }
 
@@ -204,14 +205,93 @@ public static class DependencyInjection
         return services;
     }
 
+    public static IServiceCollection AddFoundryOptions(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<FoundryOptions>(configuration.GetSection(FoundryOptions.SectionName));
+        return services;
+    }
+
+    public static IServiceCollection AddEmbeddingInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddFoundryOptions(configuration);
+        services.AddSingleton<IEmbeddingService, AzureOpenAIEmbeddingService>();
+        return services;
+    }
+
+    public static IServiceCollection AddCohereInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddFoundryOptions(configuration);
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<FoundryOptions>>().Value;
+
+            static Uri CreateCohereFoundryBaseUri(string projectEndpoint)
+            {
+                var endpoint = new Uri(projectEndpoint);
+
+                if (endpoint.AbsolutePath.Contains("/providers/cohere", StringComparison.OrdinalIgnoreCase))
+                {
+                    return endpoint;
+                }
+
+                var root = endpoint.GetLeftPart(UriPartial.Authority);
+                return new Uri($"{root}/providers/cohere");
+            }
+
+            return new CohereClient(
+                httpClient: null,
+                baseUri: CreateCohereFoundryBaseUri(options.ProjectEndpoint),
+                authorizations:
+                [
+                    new Cohere.EndPointAuthorization
+                    {
+                        Type = "Http",
+                        SchemeId = "BearerAuth",
+                        Location = "Header",
+                        Name = "Bearer",
+                        Value = options.ApiKey,
+                    }
+                ],
+                disposeHttpClient: true);
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddResourceVectorSearchInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddEmbeddingInfrastructure(configuration);
+        services.AddCohereInfrastructure(configuration);
+        services.AddScoped<IResourceChunkVectorStore, PgvectorResourceChunkVectorStore>();
+        return services;
+    }
+
+    public static IServiceCollection AddChunkingInfrastructure(this IServiceCollection services)
+    {
+        services.AddSingleton<ITokenCountingService, OpenAITokenCountingService>();
+        services.AddSingleton<ITextChunkingService, OpenAITextChunkingService>();
+        return services;
+    }
+
+    public static IServiceCollection AddTavilyInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<TavilyOptions>(configuration.GetSection(TavilyOptions.SectionName));
+
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<TavilyOptions>>().Value;
+            return new TavilyClient(options.ApiKey);
+        });
+
+        return services;
+    }
+
     /// <summary>
     /// Registers the AI services needed by resource chat.
     /// </summary>
     public static IServiceCollection AddResourceChatAiInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<FoundryOptions>(configuration.GetSection(FoundryOptions.SectionName));
-
-        services.AddSingleton<IEmbeddingService, AzureOpenAIEmbeddingService>();
+        services.AddResourceVectorSearchInfrastructure(configuration);
         services.AddKeyedScoped<IChatAgent, ResourceChatAgent>("resource-chat");
 
         return services;
@@ -223,17 +303,8 @@ public static class DependencyInjection
     public static IServiceCollection AddFullAiInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddResourceChatAiInfrastructure(configuration);
-
-        services.Configure<TavilyOptions>(configuration.GetSection(TavilyOptions.SectionName));
-
-        services.AddSingleton<ITokenCountingService, OpenAITokenCountingService>();
-        services.AddSingleton<ITextChunkingService, OpenAITextChunkingService>();
-
-        services.AddSingleton(sp =>
-        {
-            var options = sp.GetRequiredService<IOptions<TavilyOptions>>().Value;
-            return new TavilyClient(options.ApiKey);
-        });
+        services.AddChunkingInfrastructure();
+        services.AddTavilyInfrastructure(configuration);
 
         services.AddKeyedScoped<IChatAgent, GeneralChatAgent>("general-chat");
         services.AddKeyedScoped<IChatAgent, MentorChatAgent>("mentor-chat");

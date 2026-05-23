@@ -7,6 +7,7 @@ global using Aethria.Application.Abstractions.Embedding;
 global using Aethria.Application.Abstractions.Identity;
 global using Aethria.Application.Abstractions.Persistence;
 global using Aethria.Application.Abstractions.Storage;
+global using Aethria.Application.Abstractions.VectorSearch;
 global using Aethria.Application.UseCases.Chat.Contracts;
 global using Aethria.Application.UseCases.Mentors;
 global using Aethria.Application.UseCases.Quizzes.CreateAIQuizStream;

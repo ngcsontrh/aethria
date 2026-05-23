@@ -1,4 +1,3 @@
-using Aethria.Application.Abstractions.Embedding;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -16,21 +15,18 @@ internal partial class QuizReviewEditExecutor : Executor
 
     private readonly IChatClient _reviewerChatClient;
     private readonly IChatClient _editorChatClient;
-    private readonly IEmbeddingService _embeddingService;
-    private readonly IResourceRepository _resourceRepository;
+    private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
     private readonly bool _enableSensitiveTelemetry;
 
     public QuizReviewEditExecutor(
         IChatClient reviewerChatClient,
         IChatClient editorChatClient,
-        IEmbeddingService embeddingService,
-        IResourceRepository resourceRepository,
+        IResourceChunkVectorStore resourceChunkVectorStore,
         bool enableSensitiveTelemetry) : base("QuizReviewEditExecutor")
     {
         _reviewerChatClient = reviewerChatClient;
         _editorChatClient = editorChatClient;
-        _embeddingService = embeddingService;
-        _resourceRepository = resourceRepository;
+        _resourceChunkVectorStore = resourceChunkVectorStore;
         _enableSensitiveTelemetry = enableSensitiveTelemetry;
     }
 
@@ -69,17 +65,13 @@ internal partial class QuizReviewEditExecutor : Executor
         QuizGeneratorOutput message,
         CancellationToken cancellationToken)
     {
-        var searchQueries = message.Questions
-            .Select(q => q.QuestionText)
-            .ToList();
-        var embeddings = await _embeddingService.GenerateEmbeddingsAsync(searchQueries, cancellationToken);
         var assignments = new List<QuizQuestionAssignment>(message.Questions.Count);
 
         for (var i = 0; i < message.Questions.Count; i++)
         {
-            var chunks = await _resourceRepository.ListRelevantChunksByResourceIdAsync(
+            var chunks = await _resourceChunkVectorStore.GetRelevantChunksAsync(
                 message.ResourceId,
-                embeddings[i],
+                message.Questions[i].QuestionText,
                 RelevantChunkCount,
                 cancellationToken);
 

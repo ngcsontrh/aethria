@@ -5,20 +5,20 @@ namespace Aethria.Application.UseCases.Resources.DeleteResource;
 public class DeleteResourceCommandHandler : IRequestHandler<DeleteResourceCommand, ValueTask<Result>>
 {
     private readonly IResourceRepository _resourceRepository;
-    private readonly IResourceChunkRepository _resourceChunkRepository;
+    private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
     private readonly IChatSessionRepository _chatSessionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFileStorageService _fileStorageService;
 
     public DeleteResourceCommandHandler(
         IResourceRepository resourceRepository,
-        IResourceChunkRepository resourceChunkRepository,
+        IResourceChunkVectorStore resourceChunkVectorStore,
         IChatSessionRepository chatSessionRepository,
         IUnitOfWork unitOfWork,
         IFileStorageService fileStorageService)
     {
         _resourceRepository = resourceRepository;
-        _resourceChunkRepository = resourceChunkRepository;
+        _resourceChunkVectorStore = resourceChunkVectorStore;
         _chatSessionRepository = chatSessionRepository;
         _unitOfWork = unitOfWork;
         _fileStorageService = fileStorageService;
@@ -39,7 +39,7 @@ public class DeleteResourceCommandHandler : IRequestHandler<DeleteResourceComman
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
             await _chatSessionRepository.DeleteAllByResourceIdAsync(request.ResourceId, request.UserId, cancellationToken);
-            await _resourceChunkRepository.DeleteAllByResourceIdAsync(request.ResourceId, cancellationToken);
+            await _resourceChunkVectorStore.DeleteByResourceIdAsync(request.ResourceId, cancellationToken);
             await _resourceRepository.DeleteAsync(request.ResourceId, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);

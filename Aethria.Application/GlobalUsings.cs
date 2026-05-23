@@ -1,5 +1,6 @@
 global using Aethria.Application.Abstractions.Identity;
 global using Aethria.Application.Abstractions.Persistence;
+global using Aethria.Application.Abstractions.VectorSearch;
 global using Aethria.Application.ErrorTypes;
 global using Aethria.Application.Models;
 global using Aethria.Domain.Entities;
