@@ -31,18 +31,8 @@ builder.AddProject<Projects.Aethria_Api>("aethria-api")
 
 builder.AddProject<Projects.Aethria_McpServer>("aethria-mcpserver")
        .WithEnvironment("ConnectionStrings__DefaultConnection", defaultConnection)
-       .WithEnvironment("Foundry__ProjectEndpoint", foundryProjectEndpoint)
        .WithEnvironment("Foundry__AzureOpenAIEndpoint", foundryAzureOpenAIEndpoint)
-       .WithEnvironment("Foundry__ApiKey", foundryApiKey)
-       .WithEnvironment("Tavily__ApiKey", tavilyApiKey)
-       .WithEnvironment("AzureStorage__ConnectionString", azureStorageConnectionString)
-       .WithEnvironment("Auth__Issuer", authIssuer)
-       .WithEnvironment("Auth__Audience", authAudience)
-       .WithEnvironment("Auth__SigningKey", authSigningKey)
-       .WithEnvironment("Auth__AccessTokenMinutes", authAccessTokenMinutes)
-       .WithEnvironment("Auth__RefreshTokenDays", authRefreshTokenDays)
-       .WithEnvironment("Auth__RefreshTokenCookieName", authRefreshTokenCookieName)
-       .WithEnvironment("Auth__GoogleClientId", authGoogleClientId);
+       .WithEnvironment("Foundry__ApiKey", foundryApiKey);
 
 builder.AddViteApp("aethria-web", "../aethria.web")
        .WithHttpEndpoint(port: 53174)
