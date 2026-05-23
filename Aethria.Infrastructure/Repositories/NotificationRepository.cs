@@ -29,11 +29,17 @@ internal class NotificationRepository : INotificationRepository
         return await _dbContext.Notifications.FindAsync([id], cancellationToken);
     }
 
-    public async Task<(IReadOnlyList<Notification> Notifications, int TotalCount)> GetPageByUserIdAsync(Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken)
+    public async Task<(IReadOnlyList<Notification> Notifications, int TotalCount)> GetPageByUserIdAsync(Guid userId, int pageNumber, int pageSize, bool? isRead, CancellationToken cancellationToken)
     {
         var query = _dbContext.Notifications
-            .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedAt);
+            .Where(n => n.UserId == userId);
+
+        if (isRead.HasValue)
+        {
+            query = query.Where(n => n.IsRead == isRead.Value);
+        }
+
+        query = query.OrderByDescending(n => n.CreatedAt);
 
         var totalCount = await query.CountAsync(cancellationToken);
         var notifications = await query
@@ -42,5 +48,24 @@ internal class NotificationRepository : INotificationRepository
             .ToListAsync(cancellationToken);
 
         return (notifications, totalCount);
+    }
+
+    public async Task MarkAsReadAsync(Guid userId, IReadOnlyCollection<Guid> notificationIds, CancellationToken cancellationToken)
+    {
+        if (notificationIds.Count == 0)
+        {
+            return;
+        }
+
+        var ids = notificationIds.Distinct().ToArray();
+        var now = DateTimeOffset.UtcNow;
+
+        await _dbContext.Notifications
+            .Where(n => n.UserId == userId && ids.Contains(n.Id) && !n.IsRead)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(n => n.IsRead, true)
+                    .SetProperty(n => n.UpdatedAt, now),
+                cancellationToken);
     }
 }

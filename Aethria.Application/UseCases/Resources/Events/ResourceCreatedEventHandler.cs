@@ -28,8 +28,11 @@ public sealed class ResourceCreatedEventHandler : INotificationHandler<ResourceC
         {
             Id = Guid.NewGuid(),
             UserId = notification.UserId,
-            Name = "Resource Created",
-            Message = $"Your resource '{resourceName}' has been successfully uploaded.",
+            Type = NotificationType.ResourceCreated.Value,
+            Data = new Dictionary<string, string>
+            {
+                [NotificationDataKeys.ResourceName] = resourceName
+            },
             IsRead = false,
             CreatedAt = now,
             UpdatedAt = now

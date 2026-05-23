@@ -28,8 +28,11 @@ public sealed class AIQuizGenerationCompletedEventHandler : INotificationHandler
         {
             Id = Guid.NewGuid(),
             UserId = notification.UserId,
-            Name = "Quiz Generated",
-            Message = $"Your quiz '{quizName}' has been successfully generated.",
+            Type = NotificationType.QuizGenerated.Value,
+            Data = new Dictionary<string, string>
+            {
+                [NotificationDataKeys.QuizName] = quizName
+            },
             IsRead = false,
             CreatedAt = now,
             UpdatedAt = now

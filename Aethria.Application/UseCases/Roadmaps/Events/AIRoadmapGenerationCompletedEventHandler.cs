@@ -28,8 +28,11 @@ public sealed class AIRoadmapGenerationCompletedEventHandler : INotificationHand
         {
             Id = Guid.NewGuid(),
             UserId = notification.UserId,
-            Name = "Roadmap Generated",
-            Message = $"Your roadmap '{roadmapName}' has been successfully generated.",
+            Type = NotificationType.RoadmapGenerated.Value,
+            Data = new Dictionary<string, string>
+            {
+                [NotificationDataKeys.RoadmapName] = roadmapName
+            },
             IsRead = false,
             CreatedAt = now,
             UpdatedAt = now

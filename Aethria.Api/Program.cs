@@ -53,6 +53,7 @@ app.MapAuthEndpoints();
 app.MapChatEndpoints();
 app.MapChatSessionEndpoints();
 app.MapMentorEndpoints();
+app.MapNotificationEndpoints();
 app.MapQuizEndpoints();
 app.MapResourceEndpoints();
 app.MapRoadmapEndpoints();
