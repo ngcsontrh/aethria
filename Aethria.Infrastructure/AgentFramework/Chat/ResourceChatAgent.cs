@@ -96,8 +96,7 @@ internal sealed class ResourceChatAgent : IChatAgent
 
                 var sortedChunks = chunks.OrderBy(c => c.ChunkIndex).ToList();
 
-                var formattedChunks = string.Join("\n\n---\n\n",
-                    sortedChunks.Select(c => $"[Chunk {c.ChunkIndex}]\n{c.Content}"));
+                var formattedChunks = string.Join("\n\n---\n\n", sortedChunks.Select(c => c.Content));
 
                 return formattedChunks;
             },

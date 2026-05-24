@@ -65,7 +65,7 @@ internal sealed class MentorChatAgent : IChatAgent
 
         var agent = builder.Build().AsAIAgent(
             name: "CustomMentorAgent",
-            instructions: instruction.Trim(),
+            instructions: ChatAgentInstructions.BuildMentorInstruction(instruction),
             tools: aiTools);
 
         return agent.AsBuilder()
