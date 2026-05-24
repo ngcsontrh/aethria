@@ -34,11 +34,6 @@ internal class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken
         builder.Property(x => x.UpdatedAt)
             .IsRequired();
 
-        builder.HasOne<AppUser>()
-            .WithMany()
-            .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasIndex(x => x.TokenHash)
             .HasDatabaseName("ix_refresh_tokens_token_hash")
             .IsUnique();

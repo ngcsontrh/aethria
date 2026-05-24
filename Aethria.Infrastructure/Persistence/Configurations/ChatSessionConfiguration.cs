@@ -33,11 +33,6 @@ internal class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
             .HasForeignKey(x => x.SessionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Resource>()
-            .WithMany()
-            .HasForeignKey(x => x.ResourceId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         builder.HasIndex(x => new { x.ResourceId, x.UserId, x.UpdatedAt })
             .IsDescending(false, false, true)
             .HasDatabaseName("ix_chat_sessions_resource_id_user_id_updated_at");

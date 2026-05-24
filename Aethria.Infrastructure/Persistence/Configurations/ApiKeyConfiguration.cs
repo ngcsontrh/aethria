@@ -42,12 +42,6 @@ internal class ApiKeyConfiguration : IEntityTypeConfiguration<ApiKey>
         builder.Property(x => x.UpdatedAt)
             .IsRequired();
 
-        // Foreign key to AppUser
-        builder.HasOne<AppUser>()
-            .WithMany()
-            .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         // Unique index on TokenHash for authentication lookups
         builder.HasIndex(x => x.TokenHash)
             .HasDatabaseName("ix_api_keys_token_hash")
