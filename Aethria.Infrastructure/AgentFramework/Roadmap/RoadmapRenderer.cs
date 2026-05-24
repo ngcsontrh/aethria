@@ -7,7 +7,6 @@ internal static class RoadmapRenderer
     public static string RenderMarkdown(IReadOnlyList<GeneratedRoadmapStep> steps)
     {
         var orderedSteps = steps.OrderBy(s => s.StepNumber).ToList();
-        var titleByStepNumber = orderedSteps.ToDictionary(s => s.StepNumber, s => s.Title.Trim());
         var sb = new StringBuilder();
 
         foreach (var step in orderedSteps)
@@ -20,30 +19,19 @@ internal static class RoadmapRenderer
             sb.AppendLine($"## {step.StepNumber}. {step.Title.Trim()}");
             sb.AppendLine();
             sb.AppendLine(step.Description.Trim());
-            sb.AppendLine();
-            sb.AppendLine("### Learning Objectives");
-            sb.AppendLine();
 
-            foreach (var objective in step.LearningObjectives.Where(o => !string.IsNullOrWhiteSpace(o)))
-            {
-                sb.AppendLine($"- {objective.Trim()}");
-            }
-
-            var prerequisites = step.PrerequisiteStepNumbers
-                .Where(titleByStepNumber.ContainsKey)
-                .Distinct()
-                .OrderBy(n => n)
+            var learningObjectives = step.LearningObjectives
+                .Where(o => !string.IsNullOrWhiteSpace(o))
+                .Select(o => o.Trim())
                 .ToList();
 
-            if (prerequisites.Count > 0)
+            if (learningObjectives.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine("### Prerequisites");
-                sb.AppendLine();
 
-                foreach (var prerequisite in prerequisites)
+                foreach (var objective in learningObjectives)
                 {
-                    sb.AppendLine($"- {titleByStepNumber[prerequisite]}");
+                    sb.AppendLine($"- {objective}");
                 }
             }
         }
