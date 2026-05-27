@@ -24,20 +24,12 @@ public sealed class DeleteMentorCommandHandler : IRequestHandler<DeleteMentorCom
         {
             return Result.Fail(new NotFoundError("Mentor not found."));
         }
-
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-        try
+        await _unitOfWork.ExecuteInTransactionAsync(async ct =>
         {
-            await _chatSessionRepository.DeleteAllByMentorIdAsync(mentor.Id, command.UserId, cancellationToken);
-            await _mentorRepository.DeleteAsync(mentor.Id, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+            await _chatSessionRepository.DeleteAllByMentorIdAsync(mentor.Id, command.UserId, ct);
+            await _mentorRepository.DeleteAsync(mentor.Id, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }, cancellationToken);
 
         return Result.Ok();
     }

@@ -29,20 +29,12 @@ public sealed class DeleteQuizCommandHandler : IRequestHandler<DeleteQuizCommand
             return Result.Fail(new NotFoundError($"Quiz with ID {command.QuizId} not found."));
         }
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-        try
+        await _unitOfWork.ExecuteInTransactionAsync(async ct =>
         {
-            await _quizRepository.DeleteSubmissionsByQuizIdAsync(quiz.Id, cancellationToken);
-            await _quizRepository.DeleteAsync(quiz, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+            await _quizRepository.DeleteSubmissionsByQuizIdAsync(quiz.Id, ct);
+            await _quizRepository.DeleteAsync(quiz, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }, cancellationToken);
 
         return Result.Ok();
     }
