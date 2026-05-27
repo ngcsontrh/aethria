@@ -83,6 +83,13 @@ internal class QuizRepository : IQuizRepository
         return Task.CompletedTask;
     }
 
+    public async Task DeleteQuestionsByQuizIdAsync(Guid quizId, CancellationToken cancellationToken)
+    {
+        await _dbContext.QuizQuestions
+            .Where(q => q.QuizId == quizId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
     public async Task DeleteSubmissionsByQuizIdAsync(Guid quizId, CancellationToken cancellationToken)
     {
         var submissions = await _dbContext.QuizSubmissions

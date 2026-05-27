@@ -17,7 +17,7 @@ public sealed class UpdateQuizCommandHandler : IRequestHandler<UpdateQuizCommand
         UpdateQuizCommand command,
         CancellationToken cancellationToken)
     {
-        var quiz = await _quizRepository.GetByIdWithQuestionsAndVersionsAsync(command.QuizId, cancellationToken);
+        var quiz = await _quizRepository.GetByIdAsync(command.QuizId, cancellationToken);
 
         if (quiz is null)
         {
@@ -29,109 +29,121 @@ public sealed class UpdateQuizCommandHandler : IRequestHandler<UpdateQuizCommand
             return Result.Fail(new NotFoundError($"Quiz with ID {command.QuizId} not found."));
         }
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-        try
+        if (command.Name is not null)
         {
-            if (command.Name is not null)
+            quiz.Name = command.Name;
+        }
+
+        if (command.Description is not null)
+        {
+            quiz.Description = command.Description;
+        }
+
+        quiz.UpdatedAt = DateTimeOffset.UtcNow;
+
+        if (command.Questions is null)
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            var newQuestions = new List<QuizQuestion>();
+            var now = DateTimeOffset.UtcNow;
+
+            foreach (var questionItem in command.Questions)
             {
-                quiz.Name = command.Name;
-            }
-
-            if (command.Description is not null)
-            {
-                quiz.Description = command.Description;
-            }
-
-            quiz.UpdatedAt = DateTimeOffset.UtcNow;
-
-            if (command.Questions is not null)
-            {
-                quiz.Questions.Clear();
-
-                var newQuestions = new List<QuizQuestion>();
-                foreach (var questionItem in command.Questions)
+                var question = new QuizQuestion
                 {
-                    var question = new QuizQuestion
+                    Id = Guid.NewGuid(),
+                    QuizId = quiz.Id,
+                    Text = questionItem.Text,
+                    Explanation = questionItem.Explanation,
+                    OrderIndex = questionItem.OrderIndex,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                    Options = []
+                };
+
+                foreach (var optionItem in questionItem.Options)
+                {
+                    question.Options.Add(new QuestionOption
                     {
                         Id = Guid.NewGuid(),
-                        QuizId = quiz.Id,
-                        Text = questionItem.Text,
-                        Explanation = questionItem.Explanation,
-                        OrderIndex = questionItem.OrderIndex,
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        UpdatedAt = DateTimeOffset.UtcNow,
-                        Options = [.. questionItem.Options.Select(o => new QuestionOption
-                        {
-                            Id = Guid.NewGuid(),
-                            Text = o.Text,
-                            OrderIndex = o.OrderIndex,
-                            CreatedAt = DateTimeOffset.UtcNow,
-                            UpdatedAt = DateTimeOffset.UtcNow
-                        })]
-                    };
-
-                    var optionsList = question.Options.ToList();
-                    question.CorrectOptionId = optionsList[questionItem.CorrectOptionIndex].Id;
-
-                    newQuestions.Add(question);
+                        QuizQuestionId = question.Id,
+                        Text = optionItem.Text,
+                        OrderIndex = optionItem.OrderIndex,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    });
                 }
+
+                var optionsList = question.Options.ToList();
+                question.CorrectOptionId = optionsList[questionItem.CorrectOptionIndex].Id;
+
+                newQuestions.Add(question);
+            }
+
+            var newVersionNumber = quiz.CurrentVersionNumber + 1;
+            var newVersionId = Guid.NewGuid();
+
+            var questionSnapshots = new List<QuestionSnapshot>();
+            foreach (var q in newQuestions)
+            {
+                var snapshot = new QuestionSnapshot
+                {
+                    Id = Guid.NewGuid(),
+                    QuizVersionId = newVersionId,
+                    OriginalQuestionId = q.Id,
+                    Text = q.Text,
+                    Explanation = q.Explanation,
+                    OrderIndex = q.OrderIndex,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                    Options = []
+                };
+
+                foreach (var option in q.Options)
+                {
+                    snapshot.Options.Add(new QuestionOptionSnapshot
+                    {
+                        Id = Guid.NewGuid(),
+                        QuestionSnapshotId = snapshot.Id,
+                        OriginalOptionId = option.Id,
+                        Text = option.Text,
+                        OrderIndex = option.OrderIndex,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    });
+                }
+
+                snapshot.CorrectOptionId = snapshot.Options.First(o => o.OriginalOptionId == q.CorrectOptionId).Id;
+                questionSnapshots.Add(snapshot);
+            }
+
+            var newVersion = new QuizVersion
+            {
+                Id = newVersionId,
+                QuizId = quiz.Id,
+                VersionNumber = newVersionNumber,
+                CreatedAt = now,
+                UpdatedAt = now,
+                QuestionSnapshots = questionSnapshots
+            };
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                await _quizRepository.DeleteQuestionsByQuizIdAsync(quiz.Id, ct);
 
                 foreach (var q in newQuestions)
                 {
                     quiz.Questions.Add(q);
                 }
 
-                var newVersionNumber = quiz.CurrentVersionNumber + 1;
-
-                var questionSnapshots = new List<QuestionSnapshot>();
-                foreach (var q in newQuestions)
-                {
-                    var snapshotOptions = q.Options.Select(o => new QuestionOptionSnapshot
-                    {
-                        Id = Guid.NewGuid(),
-                        OriginalOptionId = o.Id,
-                        Text = o.Text,
-                        OrderIndex = o.OrderIndex,
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        UpdatedAt = DateTimeOffset.UtcNow
-                    }).ToList();
-
-                    questionSnapshots.Add(new QuestionSnapshot
-                    {
-                        Id = Guid.NewGuid(),
-                        OriginalQuestionId = q.Id,
-                        Text = q.Text,
-                        Explanation = q.Explanation,
-                        OrderIndex = q.OrderIndex,
-                        CorrectOptionId = snapshotOptions.First(o => o.OriginalOptionId == q.CorrectOptionId).Id,
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        UpdatedAt = DateTimeOffset.UtcNow,
-                        Options = snapshotOptions
-                    });
-                }
-
-                var newVersion = new QuizVersion
-                {
-                    Id = Guid.NewGuid(),
-                    QuizId = quiz.Id,
-                    VersionNumber = newVersionNumber,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    UpdatedAt = DateTimeOffset.UtcNow,
-                    QuestionSnapshots = questionSnapshots
-                };
-
                 quiz.Versions.Add(newVersion);
                 quiz.CurrentVersionNumber = newVersionNumber;
-            }
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+                await _unitOfWork.SaveChangesAsync(ct);
+            }, cancellationToken);
         }
 
         var response = new UpdateQuizResponse(
