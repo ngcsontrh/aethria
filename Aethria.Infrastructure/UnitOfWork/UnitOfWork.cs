@@ -1,6 +1,4 @@
-using Aethria.Application.Abstractions.Persistence;
 using Aethria.Infrastructure.DomainEvents;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Aethria.Infrastructure.UnitOfWork;
 
@@ -8,7 +6,6 @@ internal class UnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _dbContext;
     private readonly IDomainEventDispatcher _domainEventDispatcher;
-    private IDbContextTransaction? _transaction;
 
     public UnitOfWork(
         AppDbContext dbContext,
@@ -18,56 +15,55 @@ internal class UnitOfWork : IUnitOfWork
         _domainEventDispatcher = domainEventDispatcher;
     }
 
-    public async Task BeginTransactionAsync(CancellationToken cancellationToken)
-    {
-        if (_transaction is not null)
-        {
-            throw new InvalidOperationException("Transaction already in progress");
-        }
-        _transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-    }
-
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
         await _domainEventDispatcher.DispatchEventsAsync(cancellationToken);
         return await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task CommitTransactionAsync(CancellationToken cancellationToken)
+    public async Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken cancellationToken)
     {
-        try
+        var strategy = _dbContext.Database.CreateExecutionStrategy();
+
+        await strategy.ExecuteAsync(async () =>
         {
-            if (_transaction != null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                await _transaction.CommitAsync(cancellationToken);
+                await operation(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
             }
-        }
-        finally
-        {
-            if (_transaction != null)
+            catch
             {
-                await _transaction.DisposeAsync();
-                _transaction = null;
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
             }
-        }
+        });
     }
 
-    public async Task RollbackTransactionAsync(CancellationToken cancellationToken)
+    public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<CancellationToken, Task<TResult>> operation, CancellationToken cancellationToken)
     {
-        try
+        var strategy = _dbContext.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            if (_transaction != null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                await _transaction.RollbackAsync(cancellationToken);
+                var result = await operation(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return result;
             }
-        }
-        finally
-        {
-            if (_transaction != null)
+            catch
             {
-                await _transaction.DisposeAsync();
-                _transaction = null;
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
             }
-        }
+        });
     }
 }
