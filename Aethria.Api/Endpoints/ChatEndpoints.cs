@@ -12,7 +12,6 @@ internal static class ChatEndpoints
             .WithTags("Chat");
 
         group.MapGet("tools", GetAvailableTools)
-            .AllowAnonymous()
             .WithName("GetAvailableChatTools")
             .Produces<List<GetAvailableToolsResponse>>(StatusCodes.Status200OK);
     }
