@@ -1,6 +1,7 @@
 using Aethria.Api.Authentication;
 using Aethria.Api.Endpoints;
 using Aethria.Api.Hubs;
+using Aethria.Api.OpenApi;
 using Aethria.Application;
 using Aethria.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
@@ -23,7 +24,11 @@ builder.AddOpenTelemetrySources(
 builder.Services.AddApiInfrastructureServices(builder.Configuration);
 builder.Services.AddApiApplicationServices();
 builder.Services.AddSignalR();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    options.AddOperationTransformer<RequireBearerAuthorizationOperationTransformer>();
+});
 builder.Services.AddValidation();
 builder.Services.AddAuthentication(JwtAccessTokenAuthenticationHandler.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, JwtAccessTokenAuthenticationHandler>(
@@ -40,7 +45,10 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.AddPreferredSecuritySchemes(JwtAccessTokenAuthenticationHandler.SchemeName);
+    });
 }
 
 app.UseCors();
