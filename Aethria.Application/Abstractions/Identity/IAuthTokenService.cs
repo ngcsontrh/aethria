@@ -10,3 +10,14 @@ public interface IAuthTokenService
 
     bool RefreshTokenMatches(string storedHash, string refreshToken);
 }
+
+public sealed record AccessTokenResult(
+    string AccessToken,
+    DateTimeOffset ExpiresAt);
+
+public sealed record RefreshTokenResult(
+    Guid UserId,
+    Guid TokenId,
+    string RefreshToken,
+    string TokenHash,
+    DateTimeOffset ExpiresAt);
