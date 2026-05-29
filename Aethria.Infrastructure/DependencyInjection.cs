@@ -22,10 +22,155 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddApiInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddInfrastructurePersistence(configuration);
-        services.AddIdentityInfrastructure(configuration);
-        services.AddStorageInfrastructure(configuration);
-        services.AddFullAiInfrastructure(configuration);
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
+        services.AddDbContext<AppDbContext>(opts =>
+        {
+            opts.UseNpgsql(
+                connectionString,
+                o =>
+                {
+                    o.UseVector();
+                    o.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorCodesToAdd: null);
+                    o.CommandTimeout(60);
+                });
+        });
+
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+
+        services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
+        services.AddScoped<IMentorRepository, MentorRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IResourceRepository, ResourceRepository>();
+        services.AddScoped<IRoadmapRepository, RoadmapRepository>();
+        services.AddScoped<IQuizRepository, QuizRepository>();
+        services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        services.AddOptions<AuthOptions>()
+            .Bind(configuration.GetSection(AuthOptions.SectionName))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Issuer),
+                "Auth:Issuer is required.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Audience),
+                "Auth:Audience is required.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.SigningKey),
+                "Auth:SigningKey is required.")
+            .Validate(
+                options => options.AccessTokenMinutes > 0,
+                "Auth:AccessTokenMinutes must be greater than 0.")
+            .Validate(
+                options => options.RefreshTokenDays > 0,
+                "Auth:RefreshTokenDays must be greater than 0.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.GoogleClientId),
+                "Auth:GoogleClientId is required.");
+
+        services.AddIdentityCore<AppUser>(options =>
+        {
+            options.User.RequireUniqueEmail = true;
+            options.Password.RequiredLength = 8;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireDigit = false;
+        })
+            .AddRoles<AppRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
+
+        services.AddScoped<IIdentityAuthService, IdentityAuthService>();
+        services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
+        services.AddScoped<IAuthTokenService, AuthTokenService>();
+        services.AddScoped<IApiKeyTokenService, ApiKeyTokenService>();
+
+        services.AddOptions<AzureStorageOptions>()
+            .Bind(configuration.GetSection(AzureStorageOptions.SectionName))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.ConnectionString),
+                "AzureStorage:ConnectionString is required.");
+
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<AzureStorageOptions>>().Value;
+            return new BlobServiceClient(options.ConnectionString);
+        });
+
+        services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+
+        services.AddOptions<FoundryOptions>()
+            .Bind(configuration.GetSection(FoundryOptions.SectionName))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.ProjectEndpoint),
+                "Foundry:ProjectEndpoint is required.")
+            .Validate(
+                options => Uri.TryCreate(options.ProjectEndpoint, UriKind.Absolute, out _),
+                "Foundry:ProjectEndpoint must be an absolute URI.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.AzureOpenAIEndPoint),
+                "Foundry:AzureOpenAIEndPoint is required.")
+            .Validate(
+                options => Uri.TryCreate(options.AzureOpenAIEndPoint, UriKind.Absolute, out _),
+                "Foundry:AzureOpenAIEndPoint must be an absolute URI.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.ApiKey),
+                "Foundry:ApiKey is required.");
+
+        services.AddSingleton<IEmbeddingService, AzureOpenAIEmbeddingService>();
+
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<FoundryOptions>>().Value;
+            var endpoint = new Uri(options.ProjectEndpoint);
+            var cohereBaseUri = endpoint.AbsolutePath.Contains("/providers/cohere", StringComparison.OrdinalIgnoreCase)
+                ? endpoint
+                : new Uri($"{endpoint.GetLeftPart(UriPartial.Authority)}/providers/cohere");
+
+            return new CohereClient(
+                httpClient: null,
+                baseUri: cohereBaseUri,
+                authorizations:
+                [
+                    new Cohere.EndPointAuthorization
+                    {
+                        Type = "Http",
+                        SchemeId = "BearerAuth",
+                        Location = "Header",
+                        Name = "Bearer",
+                        Value = options.ApiKey,
+                    }
+                ],
+                disposeHttpClient: true);
+        });
+
+        services.AddScoped<IResourceChunkVectorStore, PgvectorResourceChunkVectorStore>();
+
+        services.AddSingleton<ITokenCountingService, OpenAITokenCountingService>();
+        services.AddSingleton<ITextChunkingService, OpenAITextChunkingService>();
+
+        services.AddOptions<TavilyOptions>()
+            .Bind(configuration.GetSection(TavilyOptions.SectionName))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.ApiKey),
+                "Tavily:ApiKey is required.");
+
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<TavilyOptions>>().Value;
+            return new TavilyClient(options.ApiKey);
+        });
+
+        services.AddKeyedScoped<IChatAgent, ResourceChatAgent>("resource-chat");
+        services.AddKeyedScoped<IChatAgent, GeneralChatAgent>("general-chat");
+        services.AddKeyedScoped<IChatAgent, MentorChatAgent>("mentor-chat");
+        services.AddScoped<IMentorValidatorAgent, MentorValidatorAgent>();
+        services.AddScoped<IAIQuizGenerationWorkflow, QuizAgentWorkflow>();
+        services.AddScoped<IAIRoadmapGenerationAgent, AIRoadmapGenerationAgent>();
 
         return services;
     }
@@ -34,37 +179,6 @@ public static class DependencyInjection
     /// Registers only the infrastructure services required by the MCP server.
     /// </summary>
     public static IServiceCollection AddMcpInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddAppDbContext(configuration);
-        services.AddUnitOfWorkAndDomainEvents();
-        services.AddApiKeyPersistence();
-        services.AddResourcePersistence();
-        services.AddChatSessionPersistence();
-        services.AddResourceChatAiInfrastructure(configuration);
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers persistence services: DbContext, repositories, UnitOfWork, and domain events.
-    /// </summary>
-    public static IServiceCollection AddInfrastructurePersistence(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddAppDbContext(configuration);
-        services.AddUnitOfWorkAndDomainEvents();
-        services.AddChatSessionPersistence();
-        services.AddMentorPersistence();
-        services.AddNotificationPersistence();
-        services.AddResourcePersistence();
-        services.AddRoadmapPersistence();
-        services.AddQuizPersistence();
-        services.AddApiKeyPersistence();
-        services.AddRefreshTokenPersistence();
-
-        return services;
-    }
-
-    public static IServiceCollection AddAppDbContext(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
@@ -84,163 +198,43 @@ public static class DependencyInjection
                 });
         });
 
-        return services;
-    }
-
-    public static IServiceCollection AddUnitOfWorkAndDomainEvents(this IServiceCollection services)
-    {
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddChatSessionPersistence(this IServiceCollection services)
-    {
-        services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
-        return services;
-    }
-
-    public static IServiceCollection AddMentorPersistence(this IServiceCollection services)
-    {
-        services.AddScoped<IMentorRepository, MentorRepository>();
-        return services;
-    }
-
-    public static IServiceCollection AddNotificationPersistence(this IServiceCollection services)
-    {
-        services.AddScoped<INotificationRepository, NotificationRepository>();
-        return services;
-    }
-
-    public static IServiceCollection AddResourcePersistence(this IServiceCollection services)
-    {
-        services.AddScoped<IResourceRepository, ResourceRepository>();
-        return services;
-    }
-
-    public static IServiceCollection AddRoadmapPersistence(this IServiceCollection services)
-    {
-        services.AddScoped<IRoadmapRepository, RoadmapRepository>();
-        return services;
-    }
-
-    public static IServiceCollection AddQuizPersistence(this IServiceCollection services)
-    {
-        services.AddScoped<IQuizRepository, QuizRepository>();
-        return services;
-    }
-
-    public static IServiceCollection AddApiKeyPersistence(this IServiceCollection services)
-    {
         services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
-        return services;
-    }
+        services.AddScoped<IResourceRepository, ResourceRepository>();
+        services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
 
-    public static IServiceCollection AddRefreshTokenPersistence(this IServiceCollection services)
-    {
-        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers identity and authentication services.
-    /// </summary>
-    public static IServiceCollection AddIdentityInfrastructure(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddOptions<AuthOptions>()
-            .Bind(configuration.GetSection(AuthOptions.SectionName))
+        services.AddOptions<FoundryOptions>()
+            .Bind(configuration.GetSection(FoundryOptions.SectionName))
             .Validate(
-                options => !string.IsNullOrWhiteSpace(options.Issuer),
-                "Auth:Issuer is required.")
+                options => !string.IsNullOrWhiteSpace(options.ProjectEndpoint),
+                "Foundry:ProjectEndpoint is required.")
             .Validate(
-                options => !string.IsNullOrWhiteSpace(options.Audience),
-                "Auth:Audience is required.")
+                options => Uri.TryCreate(options.ProjectEndpoint, UriKind.Absolute, out _),
+                "Foundry:ProjectEndpoint must be an absolute URI.")
             .Validate(
-                options => !string.IsNullOrWhiteSpace(options.SigningKey),
-                "Auth:SigningKey is required.")
+                options => !string.IsNullOrWhiteSpace(options.AzureOpenAIEndPoint),
+                "Foundry:AzureOpenAIEndPoint is required.")
             .Validate(
-                options => options.AccessTokenMinutes > 0,
-                "Auth:AccessTokenMinutes must be greater than 0.")
+                options => Uri.TryCreate(options.AzureOpenAIEndPoint, UriKind.Absolute, out _),
+                "Foundry:AzureOpenAIEndPoint must be an absolute URI.")
             .Validate(
-                options => options.RefreshTokenDays > 0,
-                "Auth:RefreshTokenDays must be greater than 0.");
+                options => !string.IsNullOrWhiteSpace(options.ApiKey),
+                "Foundry:ApiKey is required.");
 
-        services.AddIdentityCore<AppUser>(options =>
-        {
-            options.User.RequireUniqueEmail = true;
-            options.Password.RequiredLength = 8;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireDigit = false;
-        })
-            .AddRoles<AppRole>()
-            .AddEntityFrameworkStores<AppDbContext>();
-
-        services.AddScoped<IIdentityAuthService, IdentityAuthService>();
-        services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
-        services.AddScoped<IAuthTokenService, AuthTokenService>();
-        services.AddScoped<IApiKeyTokenService, ApiKeyTokenService>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers Azure Blob Storage services.
-    /// </summary>
-    public static IServiceCollection AddStorageInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
-
-        services.AddSingleton(sp =>
-        {
-            var options = sp.GetRequiredService<IOptions<AzureStorageOptions>>().Value;
-            return new BlobServiceClient(options.ConnectionString);
-        });
-
-        services.AddScoped<IFileStorageService, AzureBlobStorageService>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddFoundryOptions(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<FoundryOptions>(configuration.GetSection(FoundryOptions.SectionName));
-        return services;
-    }
-
-    public static IServiceCollection AddEmbeddingInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddFoundryOptions(configuration);
         services.AddSingleton<IEmbeddingService, AzureOpenAIEmbeddingService>();
-        return services;
-    }
 
-    public static IServiceCollection AddCohereInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddFoundryOptions(configuration);
         services.AddSingleton(sp =>
         {
             var options = sp.GetRequiredService<IOptions<FoundryOptions>>().Value;
-
-            static Uri CreateCohereFoundryBaseUri(string projectEndpoint)
-            {
-                var endpoint = new Uri(projectEndpoint);
-
-                if (endpoint.AbsolutePath.Contains("/providers/cohere", StringComparison.OrdinalIgnoreCase))
-                {
-                    return endpoint;
-                }
-
-                var root = endpoint.GetLeftPart(UriPartial.Authority);
-                return new Uri($"{root}/providers/cohere");
-            }
+            var endpoint = new Uri(options.ProjectEndpoint);
+            var cohereBaseUri = endpoint.AbsolutePath.Contains("/providers/cohere", StringComparison.OrdinalIgnoreCase)
+                ? endpoint
+                : new Uri($"{endpoint.GetLeftPart(UriPartial.Authority)}/providers/cohere");
 
             return new CohereClient(
                 httpClient: null,
-                baseUri: CreateCohereFoundryBaseUri(options.ProjectEndpoint),
+                baseUri: cohereBaseUri,
                 authorizations:
                 [
                     new Cohere.EndPointAuthorization
@@ -255,64 +249,9 @@ public static class DependencyInjection
                 disposeHttpClient: true);
         });
 
-        return services;
-    }
-
-    public static IServiceCollection AddResourceVectorSearchInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddEmbeddingInfrastructure(configuration);
-        services.AddCohereInfrastructure(configuration);
         services.AddScoped<IResourceChunkVectorStore, PgvectorResourceChunkVectorStore>();
-        return services;
-    }
-
-    public static IServiceCollection AddChunkingInfrastructure(this IServiceCollection services)
-    {
-        services.AddSingleton<ITokenCountingService, OpenAITokenCountingService>();
-        services.AddSingleton<ITextChunkingService, OpenAITextChunkingService>();
-        return services;
-    }
-
-    public static IServiceCollection AddTavilyInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<TavilyOptions>(configuration.GetSection(TavilyOptions.SectionName));
-
-        services.AddSingleton(sp =>
-        {
-            var options = sp.GetRequiredService<IOptions<TavilyOptions>>().Value;
-            return new TavilyClient(options.ApiKey);
-        });
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the AI services needed by resource chat.
-    /// </summary>
-    public static IServiceCollection AddResourceChatAiInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddResourceVectorSearchInfrastructure(configuration);
         services.AddKeyedScoped<IChatAgent, ResourceChatAgent>("resource-chat");
 
         return services;
     }
-
-    /// <summary>
-    /// Registers AI services: Embeddings, Chunking, Agents, Tavily, Azure OpenAI.
-    /// </summary>
-    public static IServiceCollection AddFullAiInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddResourceChatAiInfrastructure(configuration);
-        services.AddChunkingInfrastructure();
-        services.AddTavilyInfrastructure(configuration);
-
-        services.AddKeyedScoped<IChatAgent, GeneralChatAgent>("general-chat");
-        services.AddKeyedScoped<IChatAgent, MentorChatAgent>("mentor-chat");
-        services.AddScoped<IMentorValidatorAgent, MentorValidatorAgent>();
-        services.AddScoped<IAIQuizGenerationWorkflow, QuizAgentWorkflow>();
-        services.AddScoped<IAIRoadmapGenerationAgent, AIRoadmapGenerationAgent>();
-
-        return services;
-    }
-
 }
