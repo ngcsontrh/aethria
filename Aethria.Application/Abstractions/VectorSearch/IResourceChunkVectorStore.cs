@@ -17,3 +17,16 @@ public interface IResourceChunkVectorStore
         int topK,
         CancellationToken cancellationToken);
 }
+
+public sealed record ResourceChunkVectorInput(
+    Guid Id,
+    Guid ResourceId,
+    int ChunkIndex,
+    string Content,
+    ReadOnlyMemory<float> Embedding);
+
+public sealed record ResourceChunkSearchResult(
+    Guid Id,
+    int ChunkIndex,
+    string Content,
+    double VectorScore);
