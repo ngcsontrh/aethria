@@ -8,8 +8,8 @@
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.5.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.28.0" />
     <PackageVersion Include="Cohere" Version="1.0.1" />
-    <PackageVersion Include="DispatchR.Mediator" Version="2.2.0" />
-    <PackageVersion Include="DispatchR.Mediator.Abstractions" Version="2.2.0" />
+    <PackageVersion Include="DispatchR.Mediator" Version="2.3.0" />
+    <PackageVersion Include="DispatchR.Mediator.Abstractions" Version="2.3.0" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageVersion Include="FluentResults" Version="4.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
