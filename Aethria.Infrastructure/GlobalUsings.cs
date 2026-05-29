@@ -1,5 +1,6 @@
 global using Aethria.Domain.Common;
 global using Aethria.Domain.Entities;
+global using Aethria.Domain.Projections;
 global using Aethria.Domain.Repositories;
 global using Aethria.Domain.ValueObjects;
 global using Aethria.Application.Abstractions.Chunking;
