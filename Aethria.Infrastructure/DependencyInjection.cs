@@ -148,6 +148,18 @@ public static class DependencyInjection
                 disposeHttpClient: true);
         });
 
+        // services.AddOptions<QdrantOptions>()
+        //     .Bind(configuration.GetSection(QdrantOptions.SectionName))
+        //     .Validate(
+        //         options => !string.IsNullOrWhiteSpace(options.Endpoint),
+        //         "Qdrant:Endpoint is required.")
+        //     .Validate(
+        //         options => Uri.TryCreate(options.Endpoint, UriKind.Absolute, out _),
+        //         "Qdrant:Endpoint must be an absolute URI.")
+        //     .Validate(
+        //         options => !string.IsNullOrWhiteSpace(options.ApiKey),
+        //         "Qdrant:ApiKey is required.");
+
         services.AddScoped<IResourceChunkVectorStore, PgvectorResourceChunkVectorStore>();
 
         services.AddSingleton<ITokenCountingService, OpenAITokenCountingService>();
@@ -248,6 +260,18 @@ public static class DependencyInjection
                 ],
                 disposeHttpClient: true);
         });
+
+        // services.AddOptions<QdrantOptions>()
+        //     .Bind(configuration.GetSection(QdrantOptions.SectionName))
+        //     .Validate(
+        //         options => !string.IsNullOrWhiteSpace(options.Endpoint),
+        //         "Qdrant:Endpoint is required.")
+        //     .Validate(
+        //         options => Uri.TryCreate(options.Endpoint, UriKind.Absolute, out _),
+        //         "Qdrant:Endpoint must be an absolute URI.")
+        //     .Validate(
+        //         options => !string.IsNullOrWhiteSpace(options.ApiKey),
+        //         "Qdrant:ApiKey is required.");
 
         services.AddScoped<IResourceChunkVectorStore, PgvectorResourceChunkVectorStore>();
         services.AddKeyedScoped<IChatAgent, ResourceChatAgent>("resource-chat");

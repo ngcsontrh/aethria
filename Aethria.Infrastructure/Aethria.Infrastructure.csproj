@@ -12,7 +12,6 @@
     <PackageReference Include="DispatchR.Mediator.Abstractions" />
     <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="Microsoft.Agents.AI" />
-    <PackageReference Include="Microsoft.Agents.AI.DevUI" />
     <PackageReference Include="Microsoft.Agents.AI.Workflows" />
     <PackageReference Include="Microsoft.Agents.AI.Workflows.Generators">
       <PrivateAssets>all</PrivateAssets>
@@ -33,6 +32,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="PdfPig" />
     <PackageReference Include="Pgvector.EntityFrameworkCore" />
+    <PackageReference Include="Qdrant.Client" />
     <PackageReference Include="Tavily" />
   </ItemGroup>
 
