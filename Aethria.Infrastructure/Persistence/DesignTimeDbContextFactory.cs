@@ -7,8 +7,10 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     public AppDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseNpgsql("Host=localhost;Database=Aethria;Username=postgres;Password=postgres",
-            npgsqlOptions => npgsqlOptions.UseVector());
+        optionsBuilder
+            .UseNpgsql("Host=localhost;Database=Aethria;Username=postgres;Password=postgres",
+                npgsqlOptions => npgsqlOptions.UseVector())
+            .UseSnakeCaseNamingConvention();
 
         return new AppDbContext(optionsBuilder.Options);
     }

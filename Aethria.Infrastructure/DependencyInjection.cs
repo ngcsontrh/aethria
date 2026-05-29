@@ -17,6 +17,8 @@ namespace Aethria.Infrastructure;
 
 public static class DependencyInjection
 {
+    private const int DbContextPoolSize = 128;
+
     /// <summary>
     /// Registers all infrastructure services. Use this for projects that need the full stack.
     /// </summary>
@@ -25,20 +27,23 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 
-        services.AddDbContext<AppDbContext>(opts =>
-        {
-            opts.UseNpgsql(
-                connectionString,
-                o =>
-                {
-                    o.UseVector();
-                    o.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(10),
-                        errorCodesToAdd: null);
-                    o.CommandTimeout(60);
-                });
-        });
+        services.AddDbContextPool<AppDbContext>(
+            opts =>
+            {
+                opts.UseNpgsql(
+                    connectionString,
+                    o =>
+                    {
+                        o.UseVector();
+                        o.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorCodesToAdd: null);
+                        o.CommandTimeout(60);
+                    })
+                    .UseSnakeCaseNamingConvention();
+            },
+            poolSize: DbContextPoolSize);
 
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
@@ -195,20 +200,23 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 
-        services.AddDbContext<AppDbContext>(opts =>
-        {
-            opts.UseNpgsql(
-                connectionString,
-                o =>
-                {
-                    o.UseVector();
-                    o.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(10),
-                        errorCodesToAdd: null);
-                    o.CommandTimeout(60);
-                });
-        });
+        services.AddDbContextPool<AppDbContext>(
+            opts =>
+            {
+                opts.UseNpgsql(
+                    connectionString,
+                    o =>
+                    {
+                        o.UseVector();
+                        o.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorCodesToAdd: null);
+                        o.CommandTimeout(60);
+                    })
+                    .UseSnakeCaseNamingConvention();
+            },
+            poolSize: DbContextPoolSize);
 
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
