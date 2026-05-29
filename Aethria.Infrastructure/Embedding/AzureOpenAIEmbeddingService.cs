@@ -1,4 +1,3 @@
-using Aethria.Application.Abstractions.Embedding;
 using Azure;
 using Azure.AI.OpenAI;
 using OpenAI.Embeddings;

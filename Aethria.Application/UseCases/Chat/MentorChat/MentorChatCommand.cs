@@ -1,5 +1,4 @@
 using Aethria.Application.UseCases.Chat.Contracts;
-using DispatchR.Abstractions.Stream;
 namespace Aethria.Application.UseCases.Chat.MentorChat;
 
 public sealed record MentorChatCommand(

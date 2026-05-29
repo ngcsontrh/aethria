@@ -1,4 +1,3 @@
-using Aethria.Application.UseCases.Quizzes.CreateAIQuizStream;
 using Aethria.Infrastructure.AgentFramework.Quiz.Executors;
 using Azure;
 using Azure.AI.OpenAI;

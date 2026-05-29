@@ -1,6 +1,4 @@
 using Aethria.Application.UseCases.Chat.Contracts;
-using DispatchR.Abstractions.Stream;
-using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
 
 namespace Aethria.Application.UseCases.Chat.ResourceChat;

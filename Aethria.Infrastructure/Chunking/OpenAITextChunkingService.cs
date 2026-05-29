@@ -1,6 +1,5 @@
 #pragma warning disable SKEXP0050
 
-using Aethria.Application.Abstractions.Chunking;
 using Microsoft.SemanticKernel.Text;
 
 namespace Aethria.Infrastructure.Chunking;

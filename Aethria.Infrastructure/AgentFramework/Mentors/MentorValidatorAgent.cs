@@ -1,4 +1,3 @@
-using Aethria.Application.UseCases.Mentors;
 using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Agents.AI;

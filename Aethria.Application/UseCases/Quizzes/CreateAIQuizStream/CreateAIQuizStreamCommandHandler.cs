@@ -1,6 +1,4 @@
 using Aethria.Application.UseCases.Quizzes.Events;
-using DispatchR;
-using DispatchR.Abstractions.Stream;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 

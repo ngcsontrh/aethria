@@ -1,4 +1,3 @@
-using Aethria.Application.Abstractions.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Aethria.Infrastructure.Identity;

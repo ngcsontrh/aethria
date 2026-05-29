@@ -3,7 +3,6 @@ using Aethria.Application.Abstractions.Embedding;
 using Aethria.Application.Abstractions.Storage;
 using Aethria.Application.UseCases.Resources.Events;
 using Aethria.Application.Utils;
-using DispatchR;
 
 namespace Aethria.Application.UseCases.Resources.CreateResource;
 

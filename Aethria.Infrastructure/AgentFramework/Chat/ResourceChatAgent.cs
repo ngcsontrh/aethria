@@ -1,4 +1,3 @@
-using Aethria.Application.UseCases.Chat.Contracts;
 using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Agents.AI;

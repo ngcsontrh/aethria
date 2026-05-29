@@ -1,4 +1,3 @@
-using Aethria.Application.Abstractions.Identity;
 using Google.Apis.Auth;
 
 namespace Aethria.Infrastructure.Identity;
