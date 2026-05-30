@@ -35,21 +35,47 @@ export function useResourcePage() {
   const [deleteTarget, setDeleteTarget] =
     useState<ResourcePageItemResponse | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [uploadProcessing, setUploadProcessing] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("Started");
+  const [uploadMessageIndex, setUploadMessageIndex] = useState(0);
   const pageSize = 10;
 
+  const uploadAbortControllerRef = useRef<AbortController | null>(null);
   const downloadControllersRef = useRef<Map<string, AbortController>>(new Map());
 
   useEffect(() => {
+    const downloadControllers = downloadControllersRef.current;
+
     return () => {
-      downloadControllersRef.current.forEach((controller) => controller.abort());
-      downloadControllersRef.current.clear();
+      uploadAbortControllerRef.current?.abort();
+      downloadControllers.forEach((controller) => controller.abort());
+      downloadControllers.clear();
     };
   }, []);
+
+  useEffect(() => {
+    if (!uploadProcessing) return;
+
+    const intervalId = window.setInterval(() => {
+      setUploadMessageIndex((current) => {
+        const next = Math.floor(Math.random() * 5);
+        return next === current ? (next + 1) % 5 : next;
+      });
+    }, 3500);
+
+    return () => window.clearInterval(intervalId);
+  }, [uploadProcessing]);
 
   const resourcesQuery = useQuery({
     queryKey: resourceKeys.page(page, pageSize),
     queryFn: ({ signal }) => getPageResources(page, pageSize, signal),
   });
+
+  const stopUpload = () => {
+    uploadAbortControllerRef.current?.abort();
+    setUploadProcessing(false);
+    setUploadStatus("Canceled");
+  };
 
   const saveResourceMutation = useMutation({
     mutationFn: async (data: ResourceFormValues) => {
@@ -63,12 +89,35 @@ export function useResourcePage() {
         if (!data.file) {
           throw new Error("File is required for creation");
         }
-        await createResource(data.name, data.description, data.file);
+
+        const abortController = new AbortController();
+        uploadAbortControllerRef.current = abortController;
+        setUploadProcessing(true);
+        setUploadStatus("Started");
+        setUploadMessageIndex(Math.floor(Math.random() * 5));
+
+        try {
+          await createResource(
+            data.name,
+            data.description,
+            data.file,
+            abortController.signal,
+          );
+        } finally {
+          if (uploadAbortControllerRef.current === abortController) {
+            uploadAbortControllerRef.current = null;
+          }
+        }
+
         return { isEdit: false };
       }
     },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: resourceKeys.pages() });
+      if (!data.isEdit) {
+        setUploadStatus("Completed");
+      }
+
       notifications.show({
         title: t("notifications.success"),
         message: data.isEdit
@@ -76,8 +125,22 @@ export function useResourcePage() {
           : t("notifications.resource.uploadSuccess"),
         color: "green",
       });
+
+      if (!data.isEdit) {
+        setTimeout(() => {
+          setUploadProcessing(false);
+          setFormOpened(false);
+          setEditingResource(null);
+        }, 1500);
+      }
     },
-    onError: () => {
+    onError: (error) => {
+      if (axios.isCancel(error)) {
+        setUploadStatus("Canceled");
+        return;
+      }
+
+      setUploadStatus("Failed");
       notifications.show({
         title: t("notifications.error"),
         message: editingResource
@@ -122,13 +185,16 @@ export function useResourcePage() {
   };
 
   const closeForm = () => {
+    if (uploadProcessing) return;
     setFormOpened(false);
     setEditingResource(null);
   };
 
   const handleSubmit = async (data: ResourceFormValues) => {
     await saveResourceMutation.mutateAsync(data);
-    closeForm();
+    if (editingResource) {
+      closeForm();
+    }
   };
 
   const handleDelete = async () => {
@@ -192,6 +258,10 @@ export function useResourcePage() {
     setDeleteTarget,
     downloadingId,
     submitting,
+    uploadProcessing,
+    uploadStatus,
+    uploadMessageIndex,
+    stopUpload,
     openCreate,
     openEdit,
     closeForm,

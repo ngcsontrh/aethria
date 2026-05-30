@@ -178,6 +178,22 @@
       "cancel": "Cancel",
       "save": "Save"
     },
+    "uploadProgress": {
+      "title": "Uploading and indexing resource",
+      "uploading": "Uploading resource...",
+      "embedding": "Creating embeddings for search...",
+      "completed": "Resource uploaded and indexed successfully!",
+      "failed": "Failed to upload and index resource. Please try again.",
+      "canceled": "Resource upload was canceled.",
+      "statusLabel": "Status",
+      "loadingMessages": [
+        "Reading the file and extracting searchable text...",
+        "Splitting the content into focused study chunks...",
+        "Creating embeddings for semantic search...",
+        "Saving the original file and generated index...",
+        "Finalizing the resource embedding index..."
+      ]
+    },
     "validation": {
       "nameRequired": "Name is required",
       "nameTooLong": "Name must be 100 characters or fewer",

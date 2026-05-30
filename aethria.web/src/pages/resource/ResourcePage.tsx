@@ -48,6 +48,10 @@ export default function ResourcePage() {
     setDeleteTarget,
     downloadingId,
     submitting,
+    uploadProcessing,
+    uploadStatus,
+    uploadMessageIndex,
+    stopUpload,
     openCreate,
     openEdit,
     closeForm,
@@ -200,6 +204,9 @@ export default function ResourcePage() {
           editingResource ? t("resource.editTitle") : t("resource.createTitle")
         }
         size="lg"
+        closeOnClickOutside={!uploadProcessing}
+        closeOnEscape={!uploadProcessing}
+        withCloseButton={!uploadProcessing}
       >
         <ResourceForm
           key={editingResource?.id ?? "create"}
@@ -207,6 +214,10 @@ export default function ResourcePage() {
           onSubmit={handleSubmit}
           onCancel={closeForm}
           submitting={submitting}
+          uploadProcessing={uploadProcessing}
+          uploadStatus={uploadStatus}
+          uploadMessageIndex={uploadMessageIndex}
+          stopUpload={stopUpload}
         />
       </Modal>
 

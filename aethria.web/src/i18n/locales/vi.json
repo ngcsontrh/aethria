@@ -178,6 +178,22 @@
       "cancel": "Hủy",
       "save": "Lưu"
     },
+    "uploadProgress": {
+      "title": "Đang tải lên và lập chỉ mục tài liệu",
+      "uploading": "Đang tải tài liệu lên...",
+      "embedding": "Đang tạo embedding để tìm kiếm...",
+      "completed": "Tải lên và lập chỉ mục tài liệu thành công!",
+      "failed": "Tải lên và lập chỉ mục tài liệu thất bại. Vui lòng thử lại.",
+      "canceled": "Đã hủy tải lên tài liệu.",
+      "statusLabel": "Trạng thái",
+      "loadingMessages": [
+        "Đang đọc tệp và trích xuất nội dung có thể tìm kiếm...",
+        "Đang chia nội dung thành các đoạn học tập tập trung...",
+        "Đang tạo embedding cho tìm kiếm ngữ nghĩa...",
+        "Đang lưu tệp gốc và chỉ mục đã tạo...",
+        "Đang hoàn tất chỉ mục embedding cho tài liệu..."
+      ]
+    },
     "validation": {
       "nameRequired": "Vui lòng nhập tên",
       "nameTooLong": "Tên không được vượt quá 100 ký tự",
