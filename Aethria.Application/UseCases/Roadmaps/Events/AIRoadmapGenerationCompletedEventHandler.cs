@@ -21,7 +21,10 @@ public sealed class AIRoadmapGenerationCompletedEventHandler : INotificationHand
     public async ValueTask Handle(AIRoadmapGenerationCompletedEvent notification, CancellationToken cancellationToken)
     {
         var roadmap = await _roadmapRepository.GetByIdAsync(notification.RoadmapId, cancellationToken);
-        var roadmapName = roadmap?.Name ?? "AI Roadmap";
+        if (roadmap is null)
+        {
+            return;
+        }
 
         var now = DateTimeOffset.UtcNow;
         var userNotification = new Notification
@@ -31,7 +34,7 @@ public sealed class AIRoadmapGenerationCompletedEventHandler : INotificationHand
             Type = NotificationType.RoadmapGenerated.Value,
             Data = new Dictionary<string, string>
             {
-                [NotificationDataKeys.RoadmapName] = roadmapName
+                [NotificationDataKeys.RoadmapName] = roadmap.Name
             },
             IsRead = false,
             CreatedAt = now,

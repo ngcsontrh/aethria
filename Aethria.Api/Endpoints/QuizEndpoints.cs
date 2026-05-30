@@ -1,5 +1,6 @@
 using Aethria.Api.Endpoints.Quizzes;
 using Aethria.Application.UseCases.Quizzes.CreateBlankQuiz;
+using Aethria.Application.UseCases.Quizzes.CreateAIQuiz;
 using Aethria.Application.UseCases.Quizzes.DeleteQuiz;
 using Aethria.Application.UseCases.Quizzes.GetPageQuizzes;
 using Aethria.Application.UseCases.Quizzes.GetQuizById;
@@ -25,6 +26,13 @@ internal static class QuizEndpoints
             .Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost("ai", CreateAIQuiz)
+            .WithName("CreateAIQuiz")
+            .Produces(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status500InternalServerError);
 
         group.MapGet("", GetQuizzes)
             .WithName("GetQuizzes")
@@ -71,6 +79,33 @@ internal static class QuizEndpoints
             .WithName("GetQuizSubmissionById")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
+    }
+
+    /// <summary>
+    /// Create a new quiz with AI-generated questions.
+    /// </summary>
+    public static async Task<IResult> CreateAIQuiz(
+        [FromBody] CreateAIQuizRequest request,
+        [FromServices] IMediator mediator,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+    {
+        var command = new CreateAIQuizCommand(
+            Name: request.Name,
+            Description: request.Description,
+            ResourceId: request.ResourceId,
+            Prompt: request.Prompt,
+            NumberOfQuestions: request.NumberOfQuestions,
+            UserId: user.GetUserId());
+
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (result.IsFailed)
+        {
+            return result.ToErrorResult();
+        }
+
+        return Results.Json(new { id = result.Value }, statusCode: StatusCodes.Status201Created);
     }
 
     /// <summary>

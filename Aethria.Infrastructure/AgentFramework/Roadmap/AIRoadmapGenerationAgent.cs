@@ -21,22 +21,22 @@ internal sealed class AIRoadmapGenerationAgent : IAIRoadmapGenerationAgent
         _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
-    public async IAsyncEnumerable<GenerateAIRoadmapStreamResult> RunAsync(
-        GenerateAIRoadmapStreamInput input,
+    public async IAsyncEnumerable<GenerateAIRoadmapResult> RunAsync(
+        GenerateAIRoadmapInput input,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(input.SourceContent))
         {
-            yield return GenerateAIRoadmapStreamResult.Failed("Source content is empty or null.");
+            yield return GenerateAIRoadmapResult.Failed("Source content is empty or null.");
             yield break;
         }
 
-        yield return GenerateAIRoadmapStreamResult.Progress(
-            GenerateAIRoadmapStreamResult.Statuses.Started,
+        yield return GenerateAIRoadmapResult.Progress(
+            GenerateAIRoadmapResult.Statuses.Started,
             "Starting roadmap generation.");
 
-        yield return GenerateAIRoadmapStreamResult.Progress(
-            GenerateAIRoadmapStreamResult.Statuses.GeneratingRoadmap,
+        yield return GenerateAIRoadmapResult.Progress(
+            GenerateAIRoadmapResult.Statuses.GeneratingRoadmap,
             "Generating roadmap.");
 
         RoadmapGenerateResponse? response = null;
@@ -68,14 +68,14 @@ internal sealed class AIRoadmapGenerationAgent : IAIRoadmapGenerationAgent
 
         if (failureMessage is not null)
         {
-            yield return GenerateAIRoadmapStreamResult.Failed(failureMessage);
+            yield return GenerateAIRoadmapResult.Failed(failureMessage);
             yield break;
         }
 
         var steps = response?.Steps ?? [];
         if (steps.Count == 0)
         {
-            yield return GenerateAIRoadmapStreamResult.Failed("AI generated no roadmap steps.");
+            yield return GenerateAIRoadmapResult.Failed("AI generated no roadmap steps.");
             yield break;
         }
 
@@ -85,11 +85,11 @@ internal sealed class AIRoadmapGenerationAgent : IAIRoadmapGenerationAgent
 
         if (string.IsNullOrWhiteSpace(roadmapContent))
         {
-            yield return GenerateAIRoadmapStreamResult.Failed("AI generated an empty roadmap.");
+            yield return GenerateAIRoadmapResult.Failed("AI generated an empty roadmap.");
             yield break;
         }
 
-        yield return GenerateAIRoadmapStreamResult.Completed(roadmapContent, mermaidDiagram);
+        yield return GenerateAIRoadmapResult.Completed(roadmapContent, mermaidDiagram);
     }
 
     private static async Task<RoadmapGenerateResponse?> GenerateRoadmapAsync(

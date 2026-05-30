@@ -1,10 +1,9 @@
+using Aethria.Api;
 using Aethria.Api.Authentication;
 using Aethria.Api.Endpoints;
 using Aethria.Api.Hubs;
-using Aethria.Api.OpenApi;
 using Aethria.Application;
 using Aethria.Infrastructure;
-using Microsoft.AspNetCore.Authentication;
 using Scalar.AspNetCore;
 
 const string AgentFrameworkSourceName = "Experimental.Microsoft.Agents.AI";
@@ -23,20 +22,7 @@ builder.AddOpenTelemetrySources(
 
 builder.Services.AddApiInfrastructureServices(builder.Configuration);
 builder.Services.AddApiApplicationServices();
-builder.Services.AddSignalR();
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-    options.AddOperationTransformer<RequireBearerAuthorizationOperationTransformer>();
-});
-builder.Services.AddValidation();
-builder.Services.AddAuthentication(JwtAccessTokenAuthenticationHandler.SchemeName)
-    .AddScheme<AuthenticationSchemeOptions, JwtAccessTokenAuthenticationHandler>(
-        JwtAccessTokenAuthenticationHandler.SchemeName,
-        options => { });
-builder.Services.AddAuthorization();
-
-builder.Services.AddConfigurableCors(builder.Configuration);
+builder.Services.AddApiServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -67,7 +53,6 @@ app.MapResourceEndpoints();
 app.MapRoadmapEndpoints();
 
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapHub<QuizHub>("/hubs/quizzes");
-app.MapHub<RoadmapHub>("/hubs/roadmaps");
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

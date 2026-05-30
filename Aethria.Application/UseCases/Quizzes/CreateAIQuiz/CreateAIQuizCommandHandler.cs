@@ -1,25 +1,24 @@
 using Aethria.Application.UseCases.Quizzes.Events;
 using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
 
-namespace Aethria.Application.UseCases.Quizzes.CreateAIQuizStream;
+namespace Aethria.Application.UseCases.Quizzes.CreateAIQuiz;
 
-public sealed class CreateAIQuizStreamCommandHandler : IStreamRequestHandler<CreateAIQuizStreamCommand, Result<CreateAIQuizStreamEvent>>
+public sealed class CreateAIQuizCommandHandler : IRequestHandler<CreateAIQuizCommand, ValueTask<Result<Guid>>>
 {
     private readonly IResourceRepository _resourceRepository;
     private readonly IQuizRepository _quizRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
     private readonly IAIQuizGenerationWorkflow _workflow;
-    private readonly ILogger<CreateAIQuizStreamCommandHandler> _logger;
+    private readonly ILogger<CreateAIQuizCommandHandler> _logger;
 
-    public CreateAIQuizStreamCommandHandler(
+    public CreateAIQuizCommandHandler(
         IResourceRepository resourceRepository,
         IQuizRepository quizRepository,
         IUnitOfWork unitOfWork,
         IMediator mediator,
         IAIQuizGenerationWorkflow workflow,
-        ILogger<CreateAIQuizStreamCommandHandler> logger)
+        ILogger<CreateAIQuizCommandHandler> logger)
     {
         _resourceRepository = resourceRepository;
         _quizRepository = quizRepository;
@@ -29,27 +28,25 @@ public sealed class CreateAIQuizStreamCommandHandler : IStreamRequestHandler<Cre
         _logger = logger;
     }
 
-    public async IAsyncEnumerable<Result<CreateAIQuizStreamEvent>> Handle(
-        CreateAIQuizStreamCommand command,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async ValueTask<Result<Guid>> Handle(
+        CreateAIQuizCommand command,
+        CancellationToken cancellationToken)
     {
         var resource = await _resourceRepository.GetByIdAsync(command.ResourceId, cancellationToken);
         if (resource is null || resource.UserId != command.UserId)
         {
-            yield return Result.Fail<CreateAIQuizStreamEvent>(new NotFoundError("Resource not found."));
-            yield break;
+            return Result.Fail<Guid>(new NotFoundError("Resource not found."));
         }
 
         if (string.IsNullOrWhiteSpace(resource.Content))
         {
-            yield return Result.Fail<CreateAIQuizStreamEvent>(
-                new ValidationError("Resource has no content for AI quiz generation."));
-            yield break;
+            const string message = "Resource has no content for AI quiz generation.";
+            return Result.Fail<Guid>(new ValidationError(message));
         }
 
         var numberOfQuestions = command.NumberOfQuestions;
-        CreateAIQuizStreamResult? completedResult = null;
-        var input = new CreateAIQuizStreamInput
+        CreateAIQuizResult? completedResult = null;
+        var input = new CreateAIQuizInput
         {
             ResourceId = command.ResourceId,
             SourceContent = resource.Content,
@@ -61,9 +58,8 @@ public sealed class CreateAIQuizStreamCommandHandler : IStreamRequestHandler<Cre
         {
             if (result.IsFailed)
             {
-                yield return Result.Fail<CreateAIQuizStreamEvent>(
-                    new InternalError(result.ErrorMessage ?? result.Message ?? "AI quiz generation failed."));
-                yield break;
+                var message = result.ErrorMessage ?? result.Message ?? "AI quiz generation failed.";
+                return Result.Fail<Guid>(new InternalError(message));
             }
 
             if (result.IsCompleted)
@@ -72,21 +68,23 @@ public sealed class CreateAIQuizStreamCommandHandler : IStreamRequestHandler<Cre
                 break;
             }
 
-            yield return Result.Ok(new CreateAIQuizStreamEvent(
-                Status: result.Status,
-                Message: result.Message ?? "AI quiz generation is in progress."));
+            _logger.LogDebug(
+                "AI quiz generation progress for resource {ResourceId}: {Status} - {Message}",
+                command.ResourceId,
+                result.Status,
+                result.Message);
         }
 
         if (completedResult is null)
         {
-            yield return Result.Fail<CreateAIQuizStreamEvent>(new InternalError("AI quiz generation failed."));
-            yield break;
+            const string message = "AI quiz generation failed.";
+            return Result.Fail<Guid>(new InternalError(message));
         }
 
         if (completedResult.Questions.Count == 0)
         {
-            yield return Result.Fail<CreateAIQuizStreamEvent>(new InternalError("AI generated no questions."));
-            yield break;
+            const string message = "AI generated no questions.";
+            return Result.Fail<Guid>(new InternalError(message));
         }
 
         if (completedResult.Questions.Count != numberOfQuestions)
@@ -95,8 +93,8 @@ public sealed class CreateAIQuizStreamCommandHandler : IStreamRequestHandler<Cre
                 "AI generated an unexpected number of questions. Expected {Expected}, actual {Actual}",
                 numberOfQuestions,
                 completedResult.Questions.Count);
-            yield return Result.Fail<CreateAIQuizStreamEvent>(new InternalError("AI generated an invalid number of questions."));
-            yield break;
+            const string message = "AI generated an invalid number of questions.";
+            return Result.Fail<Guid>(new InternalError(message));
         }
 
         var quizId = Guid.NewGuid();
@@ -132,8 +130,8 @@ public sealed class CreateAIQuizStreamCommandHandler : IStreamRequestHandler<Cre
 
             if (generated.CorrectOptionIndex < 0 || generated.CorrectOptionIndex >= question.Options.Count)
             {
-                yield return Result.Fail<CreateAIQuizStreamEvent>(new InternalError("AI generated an invalid quiz question with out-of-bounds correct option index."));
-                yield break;
+                const string message = "AI generated an invalid quiz question with out-of-bounds correct option index.";
+                return Result.Fail<Guid>(new InternalError(message));
             }
 
             question.CorrectOptionId = question.Options.ElementAt(generated.CorrectOptionIndex).Id;
@@ -214,9 +212,6 @@ public sealed class CreateAIQuizStreamCommandHandler : IStreamRequestHandler<Cre
 
         await _mediator.Publish(completedEvent, cancellationToken);
 
-        yield return Result.Ok(new CreateAIQuizStreamEvent(
-            Status: CreateAIQuizStreamResult.Statuses.Completed,
-            Message: "AI quiz generation completed.",
-            QuizId: quizId));
+        return Result.Ok(quizId);
     }
 }

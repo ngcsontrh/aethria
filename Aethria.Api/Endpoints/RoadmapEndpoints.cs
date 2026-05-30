@@ -1,5 +1,6 @@
 using Aethria.Api.Endpoints.Roadmaps;
 using Aethria.Application.UseCases.Roadmaps.DeleteRoadmap;
+using Aethria.Application.UseCases.Roadmaps.GenerateAIRoadmap;
 using Aethria.Application.UseCases.Roadmaps.GetPageRoadmaps;
 using Aethria.Application.UseCases.Roadmaps.GetRoadmapById;
 
@@ -21,6 +22,13 @@ internal static class RoadmapEndpoints
             .WithName("GetRoadmapById")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost("ai", GenerateAIRoadmap)
+            .WithName("GenerateAIRoadmap")
+            .Produces(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("{id:guid}", DeleteRoadmap)
             .WithName("DeleteRoadmap")
@@ -73,6 +81,32 @@ internal static class RoadmapEndpoints
         }
 
         return Results.Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Generate a roadmap with AI.
+    /// </summary>
+    public static async Task<IResult> GenerateAIRoadmap(
+        [FromBody] GenerateAIRoadmapRequest request,
+        [FromServices] IMediator mediator,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+    {
+        var command = new GenerateAIRoadmapCommand(
+            Name: request.Name,
+            Description: request.Description,
+            ResourceId: request.ResourceId,
+            Prompt: request.Prompt,
+            UserId: user.GetUserId());
+
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (result.IsFailed)
+        {
+            return result.ToErrorResult();
+        }
+
+        return Results.Json(new { id = result.Value }, statusCode: StatusCodes.Status201Created);
     }
 
     /// <summary>

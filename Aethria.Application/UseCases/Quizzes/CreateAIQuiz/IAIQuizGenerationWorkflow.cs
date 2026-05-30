@@ -1,11 +1,11 @@
-namespace Aethria.Application.UseCases.Quizzes.CreateAIQuizStream;
+namespace Aethria.Application.UseCases.Quizzes.CreateAIQuiz;
 
 public interface IAIQuizGenerationWorkflow
 {
-    IAsyncEnumerable<CreateAIQuizStreamResult> RunAsync(CreateAIQuizStreamInput input, CancellationToken cancellationToken);
+    IAsyncEnumerable<CreateAIQuizResult> RunAsync(CreateAIQuizInput input, CancellationToken cancellationToken);
 }
 
-public sealed record CreateAIQuizStreamInput
+public sealed record CreateAIQuizInput
 {
     public Guid ResourceId { get; init; }
     public string SourceContent { get; init; } = string.Empty;
@@ -13,7 +13,7 @@ public sealed record CreateAIQuizStreamInput
     public int NumberOfQuestions { get; init; }
 }
 
-public sealed record CreateAIQuizStreamResult
+public sealed record CreateAIQuizResult
 {
     public string Status { get; init; } = string.Empty;
     public string? Message { get; init; }
@@ -23,13 +23,13 @@ public sealed record CreateAIQuizStreamResult
     public bool IsCompleted => Status == Statuses.Completed;
     public bool IsFailed => Status == Statuses.Failed;
 
-    public static CreateAIQuizStreamResult Progress(string status, string message) =>
+    public static CreateAIQuizResult Progress(string status, string message) =>
         new() { Status = status, Message = message };
 
-    public static CreateAIQuizStreamResult Completed(IReadOnlyList<AIQuizQuestion> questions) =>
+    public static CreateAIQuizResult Completed(IReadOnlyList<AIQuizQuestion> questions) =>
         new() { Status = Statuses.Completed, Message = "AI quiz generation completed.", Questions = questions };
 
-    public static CreateAIQuizStreamResult Failed(string errorMessage) =>
+    public static CreateAIQuizResult Failed(string errorMessage) =>
         new() { Status = Statuses.Failed, Message = "AI quiz generation failed.", ErrorMessage = errorMessage };
 
     public static class Statuses

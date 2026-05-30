@@ -1,63 +1,63 @@
 using Aethria.Application.UseCases.Roadmaps.Events;
-using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 
-namespace Aethria.Application.UseCases.Roadmaps.GenerateAIRoadmapStream;
+namespace Aethria.Application.UseCases.Roadmaps.GenerateAIRoadmap;
 
-public sealed class GenerateAIRoadmapStreamCommandHandler : IStreamRequestHandler<GenerateAIRoadmapStreamCommand, Result<GenerateAIRoadmapStreamEvent>>
+public sealed class GenerateAIRoadmapCommandHandler : IRequestHandler<GenerateAIRoadmapCommand, ValueTask<Result<Guid>>>
 {
     private readonly IResourceRepository _resourceRepository;
     private readonly IRoadmapRepository _roadmapRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
     private readonly IAIRoadmapGenerationAgent _agent;
+    private readonly ILogger<GenerateAIRoadmapCommandHandler> _logger;
 
-    public GenerateAIRoadmapStreamCommandHandler(
+    public GenerateAIRoadmapCommandHandler(
         IResourceRepository resourceRepository,
         IRoadmapRepository roadmapRepository,
         IUnitOfWork unitOfWork,
         IMediator mediator,
-        IAIRoadmapGenerationAgent agent)
+        IAIRoadmapGenerationAgent agent,
+        ILogger<GenerateAIRoadmapCommandHandler> logger)
     {
         _resourceRepository = resourceRepository;
         _roadmapRepository = roadmapRepository;
         _unitOfWork = unitOfWork;
         _mediator = mediator;
         _agent = agent;
+        _logger = logger;
     }
 
-    public async IAsyncEnumerable<Result<GenerateAIRoadmapStreamEvent>> Handle(
-        GenerateAIRoadmapStreamCommand command,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async ValueTask<Result<Guid>> Handle(
+        GenerateAIRoadmapCommand command,
+        CancellationToken cancellationToken)
     {
         var resource = await _resourceRepository.GetByIdAsync(command.ResourceId, cancellationToken);
         if (resource is null || resource.UserId != command.UserId)
         {
-            yield return Result.Fail<GenerateAIRoadmapStreamEvent>(new NotFoundError("Resource not found."));
-            yield break;
+            return Result.Fail<Guid>(new NotFoundError("Resource not found."));
         }
 
         if (string.IsNullOrWhiteSpace(resource.Content))
         {
-            yield return Result.Fail<GenerateAIRoadmapStreamEvent>(
-                new ValidationError("Resource has no content for AI roadmap generation."));
-            yield break;
+            const string message = "Resource has no content for AI roadmap generation.";
+            return Result.Fail<Guid>(new ValidationError(message));
         }
 
-        var input = new GenerateAIRoadmapStreamInput
+        var input = new GenerateAIRoadmapInput
         {
             SourceContent = resource.Content,
             UserPrompt = command.Prompt
         };
 
-        GenerateAIRoadmapStreamResult? completedResult = null;
+        GenerateAIRoadmapResult? completedResult = null;
 
         await foreach (var result in _agent.RunAsync(input, cancellationToken))
         {
             if (result.IsFailed)
             {
-                yield return Result.Fail<GenerateAIRoadmapStreamEvent>(
-                    new InternalError(result.ErrorMessage ?? result.Message ?? "AI roadmap generation failed."));
-                yield break;
+                var message = result.ErrorMessage ?? result.Message ?? "AI roadmap generation failed.";
+                return Result.Fail<Guid>(new InternalError(message));
             }
 
             if (result.IsCompleted)
@@ -66,21 +66,23 @@ public sealed class GenerateAIRoadmapStreamCommandHandler : IStreamRequestHandle
                 break;
             }
 
-            yield return Result.Ok(new GenerateAIRoadmapStreamEvent(
-                Status: result.Status,
-                Message: result.Message ?? "AI roadmap generation is in progress."));
+            _logger.LogDebug(
+                "AI roadmap generation progress for resource {ResourceId}: {Status} - {Message}",
+                command.ResourceId,
+                result.Status,
+                result.Message);
         }
 
         if (completedResult is null)
         {
-            yield return Result.Fail<GenerateAIRoadmapStreamEvent>(new InternalError("AI roadmap generation failed."));
-            yield break;
+            const string message = "AI roadmap generation failed.";
+            return Result.Fail<Guid>(new InternalError(message));
         }
 
         if (string.IsNullOrWhiteSpace(completedResult.RoadmapContent))
         {
-            yield return Result.Fail<GenerateAIRoadmapStreamEvent>(new InternalError("AI generated an empty roadmap."));
-            yield break;
+            const string message = "AI generated an empty roadmap.";
+            return Result.Fail<Guid>(new InternalError(message));
         }
 
         var roadmapId = Guid.NewGuid();
@@ -107,9 +109,6 @@ public sealed class GenerateAIRoadmapStreamCommandHandler : IStreamRequestHandle
 
         await _mediator.Publish(completedEvent, cancellationToken);
 
-        yield return Result.Ok(new GenerateAIRoadmapStreamEvent(
-            Status: GenerateAIRoadmapStreamResult.Statuses.Completed,
-            Message: "AI roadmap generation completed.",
-            RoadmapId: roadmapId));
+        return Result.Ok(roadmapId);
     }
 }

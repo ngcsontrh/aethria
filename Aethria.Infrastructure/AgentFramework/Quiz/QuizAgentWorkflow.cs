@@ -25,17 +25,17 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
         _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
-    public async IAsyncEnumerable<CreateAIQuizStreamResult> RunAsync(
-        CreateAIQuizStreamInput input,
+    public async IAsyncEnumerable<CreateAIQuizResult> RunAsync(
+        CreateAIQuizInput input,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(input.SourceContent))
         {
-            yield return CreateAIQuizStreamResult.Failed("Source content is empty or null.");
+            yield return CreateAIQuizResult.Failed("Source content is empty or null.");
             yield break;
         }
 
-        yield return CreateAIQuizStreamResult.Progress(CreateAIQuizStreamResult.Statuses.Started, "Starting quiz generation workflow.");
+        yield return CreateAIQuizResult.Progress(CreateAIQuizResult.Statuses.Started, "Starting quiz generation workflow.");
 
         var azureOpenAIClient = new AzureOpenAIClient(
             new Uri(_foundryOptions.AzureOpenAIEndPoint),
@@ -67,7 +67,7 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
             .WithOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
             .Build();
 
-        yield return CreateAIQuizStreamResult.Progress(CreateAIQuizStreamResult.Statuses.GeneratingQuestions, "Generating quiz questions.");
+        yield return CreateAIQuizResult.Progress(CreateAIQuizResult.Statuses.GeneratingQuestions, "Generating quiz questions.");
 
         var inputMessage = new QuizGeneratorInput
         {
@@ -91,12 +91,12 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
 
         if (extractedResult is null || !extractedResult.IsSuccess)
         {
-            yield return CreateAIQuizStreamResult.Failed(
-                extractedResult?.ErrorMessage ?? "Quiz generation workflow returned no output.");
+            yield return CreateAIQuizResult.Failed(
+                extractedResult?.ErrorMessage ?? "  Quiz generation workflow returned no output.");
             yield break;
         }
 
-        yield return CreateAIQuizStreamResult.Completed(
+        yield return CreateAIQuizResult.Completed(
             extractedResult.Questions.Select(q => new AIQuizQuestion
             {
                 QuestionNumber = q.QuestionNumber,

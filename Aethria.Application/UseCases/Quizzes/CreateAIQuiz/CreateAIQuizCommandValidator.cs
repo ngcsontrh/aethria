@@ -1,8 +1,8 @@
-namespace Aethria.Application.UseCases.Quizzes.CreateAIQuizStream;
+namespace Aethria.Application.UseCases.Quizzes.CreateAIQuiz;
 
-internal sealed class CreateAIQuizStreamCommandValidator : AbstractValidator<CreateAIQuizStreamCommand>
+internal sealed class CreateAIQuizCommandValidator : AbstractValidator<CreateAIQuizCommand>
 {
-    public CreateAIQuizStreamCommandValidator()
+    public CreateAIQuizCommandValidator()
     {
         RuleFor(command => command.Name)
             .Must(name => !string.IsNullOrWhiteSpace(name))

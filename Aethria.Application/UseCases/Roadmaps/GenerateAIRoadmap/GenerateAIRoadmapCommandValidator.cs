@@ -1,8 +1,8 @@
-namespace Aethria.Application.UseCases.Roadmaps.GenerateAIRoadmapStream;
+namespace Aethria.Application.UseCases.Roadmaps.GenerateAIRoadmap;
 
-internal sealed class GenerateAIRoadmapStreamCommandValidator : AbstractValidator<GenerateAIRoadmapStreamCommand>
+internal sealed class GenerateAIRoadmapCommandValidator : AbstractValidator<GenerateAIRoadmapCommand>
 {
-    public GenerateAIRoadmapStreamCommandValidator()
+    public GenerateAIRoadmapCommandValidator()
     {
         RuleFor(command => command.Name)
             .Must(name => !string.IsNullOrWhiteSpace(name))
