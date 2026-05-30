@@ -8,7 +8,7 @@ The solution follows a Clean Architecture style on .NET 10, with .NET Aspire orc
 
 - `Aethria.Domain`: core entities, value objects, notifications, events, and repository contracts.
 - `Aethria.Application`: DispatchR use cases, validation pipelines, storage/vector search abstractions, and API/MCP-specific service registration.
-- `Aethria.Infrastructure`: EF Core persistence, Identity, Azure Blob Storage, embeddings, chunking, pgvector search, AI reranking, AI agent integrations, and feature-scoped service registration.
+- `Aethria.Infrastructure`: EF Core persistence, Identity, Azure Blob Storage, embeddings, chunking, Qdrant vector search, AI reranking, AI agent integrations, and feature-scoped service registration.
 - `Aethria.Api`: REST endpoints for app features, notifications, SignalR hubs, JWT authentication, OpenAPI, Scalar UI, and full API service composition.
 - `Aethria.McpServer`: protected Model Context Protocol server with minimal resource-chat service composition for AI agents.
 - `Aethria.AppHost`: .NET Aspire host for local distributed orchestration.
@@ -54,7 +54,7 @@ aethria/
 │   ├── Persistence/             # Entity Framework Core DbContext configurations
 │   ├── Storage/                 # File uploads to Azure Blob Storage
 │   ├── UnitOfWork/              # Unit of work and transaction coordination
-│   ├── VectorSearch/            # pgvector resource search and Cohere reranking
+│   ├── VectorSearch/            # Qdrant resource search and Cohere reranking
 │   └── DependencyInjection.cs   # AddApiInfrastructureServices and AddMcpInfrastructureServices
 ├── Aethria.ServiceDefaults/     # Shared resiliency, service discovery, telemetry, and health check config
 │   └── Extensions.cs            # Custom IHostApplicationBuilder setups
@@ -72,7 +72,7 @@ aethria/
 ## Main Capabilities
 
 - Email and Google authentication with refresh tokens.
-- Resource upload, parsing, chunking, storage, pgvector search, Cohere reranking, and resource chat.
+- Resource upload, parsing, chunking, storage, Qdrant vector search, Cohere reranking, and resource chat.
 - Mentor creation, validation, and mentor chat.
 - AI-generated learning roadmaps with streaming updates.
 - Quiz creation, AI quiz generation, attempts, submission history, and review.
@@ -88,7 +88,7 @@ dotnet restore
 dotnet run --project Aethria.AppHost
 ```
 
-Configuration is supplied through the `appsettings*.json` files for database, Azure Storage, Azure AI Foundry/OpenAI, Cohere reranking, Tavily, and authentication settings.
+Configuration is supplied through the `appsettings*.json` files for database, Qdrant, Azure Storage, Azure AI Foundry/OpenAI, Cohere reranking, Tavily, and authentication settings.
 
 ### Local Configuration
 
@@ -113,7 +113,9 @@ For local development, fill the variables in each project's `appsettings.Develop
     "AuthAccessTokenMinutes": "15",
     "AuthRefreshTokenDays": "7",
     "AuthRefreshTokenCookieName": "aethria.refresh_token",
-    "AuthGoogleClientId": "<google-oauth-client-id>"
+    "AuthGoogleClientId": "<google-oauth-client-id>",
+    "QdrantEndpoint": "<qdrant-endpoint>",
+    "QdrantApiKey": "<qdrant-api-key>"
   }
 }
 ```
@@ -137,6 +139,10 @@ When running the API directly with `dotnet run --project Aethria.Api`, fill `Aet
   },
   "AzureStorage": {
     "ConnectionString": "<azure-storage-connection-string>"
+  },
+  "Qdrant": {
+    "Endpoint": "<qdrant-endpoint>",
+    "ApiKey": "<qdrant-api-key>"
   },
   "Auth": {
     "Issuer": "Aethria",
@@ -165,6 +171,10 @@ When running the MCP server directly with `dotnet run --project Aethria.McpServe
     "ProjectEndpoint": "<azure-ai-foundry-project-endpoint>",
     "AzureOpenAIEndpoint": "<azure-openai-endpoint>",
     "ApiKey": "<azure-ai-foundry-or-openai-api-key>"
+  },
+  "Qdrant": {
+    "Endpoint": "<qdrant-endpoint>",
+    "ApiKey": "<qdrant-api-key>"
   }
 }
 ```
@@ -175,7 +185,9 @@ The MCP server uses the same database as the API for API key authentication. Cre
 
 | Variable | Used by | Meaning |
 | --- | --- | --- |
-| `DefaultConnection` / `ConnectionStrings:DefaultConnection` | AppHost, API, MCP | PostgreSQL connection string. The database must support the `vector` extension because resource embeddings are stored with pgvector. |
+| `DefaultConnection` / `ConnectionStrings:DefaultConnection` | AppHost, API, MCP | PostgreSQL connection string used for application data, identity, API keys, resources, quizzes, roadmaps, and notifications. |
+| `QdrantEndpoint` / `Qdrant:Endpoint` | AppHost, API, MCP | Qdrant endpoint used to store and search resource chunk embeddings. |
+| `QdrantApiKey` / `Qdrant:ApiKey` | AppHost, API, MCP | API key used to authenticate Qdrant requests. |
 | `FoundryProjectEndpoint` / `Foundry:ProjectEndpoint` | AppHost, API, MCP | Azure AI Foundry project endpoint. The app uses it to build the Cohere provider endpoint for reranking search results. |
 | `FoundryAzureOpenAIEndpoint` / `Foundry:AzureOpenAIEndpoint` | AppHost, API, MCP | Azure OpenAI endpoint used for chat, quiz, roadmap, mentor validation, and embedding generation. |
 | `FoundryApiKey` / `Foundry:ApiKey` | AppHost, API, MCP | API key for Azure AI Foundry or Azure OpenAI requests. |
