@@ -156,6 +156,31 @@ When running the API directly with `dotnet run --project Aethria.Api`, fill `Aet
 }
 ```
 
+Equivalent environment variables for `Aethria.Api`:
+
+| Environment variable | Required | Value |
+| --- | --- | --- |
+| `ConnectionStrings__DefaultConnection` | Yes | PostgreSQL connection string. |
+| `Foundry__ProjectEndpoint` | Yes | Azure AI Foundry project endpoint for Foundry-hosted model/provider APIs. |
+| `Foundry__AzureOpenAIEndpoint` | Yes | Azure OpenAI endpoint for deployed OpenAI-compatible models. |
+| `Foundry__ApiKey` | Yes | Azure AI Foundry / Azure OpenAI API key. |
+| `Tavily__ApiKey` | Yes | Tavily API key used by chat agents that can search the web. |
+| `AzureStorage__ConnectionString` | Yes | Azure Blob Storage connection string for uploaded resources. |
+| `Qdrant__Endpoint` | Yes | Qdrant endpoint for resource chunk vectors. |
+| `Qdrant__ApiKey` | Yes | Qdrant API key. |
+| `Auth__Issuer` | Yes | JWT issuer. |
+| `Auth__Audience` | Yes | JWT audience, normally `Aethria.Api`. |
+| `Auth__SigningKey` | Yes | Long secret used to sign JWT access tokens. |
+| `Auth__AccessTokenMinutes` | Yes | Access token lifetime in minutes. |
+| `Auth__RefreshTokenDays` | Yes | Refresh token lifetime in days. |
+| `Auth__RefreshTokenCookieName` | Yes | Cookie name used for refresh tokens. |
+| `Auth__GoogleClientId` | Yes | Google OAuth client ID used to validate Google ID tokens. |
+| `Cors__0__Origins__0` | Optional | First allowed web origin, for example `http://localhost:53174`. Add more origins as `Cors__0__Origins__1`, etc. |
+| `Cors__0__AllowedMethods__0` | Optional | Use `*` for all methods in local development. |
+| `Cors__0__AllowedHeaders__0` | Optional | Use `*` for all headers in local development. |
+| `Cors__0__AllowCredentials` | Optional | Set to `true` when the browser must send refresh-token cookies. |
+| `ASPNETCORE_ENVIRONMENT` | Optional | Set to `Development` for local development. |
+
 If the web client runs on a different local origin, add it to `Cors` in `Aethria.Api/appsettings.Development.json`.
 
 #### Aethria.McpServer
@@ -179,27 +204,39 @@ When running the MCP server directly with `dotnet run --project Aethria.McpServe
 }
 ```
 
+Equivalent environment variables for `Aethria.McpServer`:
+
+| Environment variable | Required | Value |
+| --- | --- | --- |
+| `ConnectionStrings__DefaultConnection` | Yes | PostgreSQL connection string. Use the same database as `Aethria.Api` so API keys can be validated. |
+| `Foundry__ProjectEndpoint` | Yes | Azure AI Foundry project endpoint for Foundry-hosted model/provider APIs. |
+| `Foundry__AzureOpenAIEndpoint` | Yes | Azure OpenAI endpoint for deployed OpenAI-compatible models. |
+| `Foundry__ApiKey` | Yes | Azure AI Foundry / Azure OpenAI API key. |
+| `Qdrant__Endpoint` | Yes | Qdrant endpoint for resource chunk vectors. |
+| `Qdrant__ApiKey` | Yes | Qdrant API key. |
+| `ASPNETCORE_ENVIRONMENT` | Optional | Set to `Development` for local development. |
+
 The MCP server uses the same database as the API for API key authentication. Create an API key through `Aethria.Api`, then call the MCP endpoint with the `X-Api-Key` header.
 
 #### Variable Meanings
 
-| Variable | Used by | Meaning |
+| AppHost parameter / appsettings key / environment variable | Used by | Meaning |
 | --- | --- | --- |
-| `DefaultConnection` / `ConnectionStrings:DefaultConnection` | AppHost, API, MCP | PostgreSQL connection string used for application data, identity, API keys, resources, quizzes, roadmaps, and notifications. |
-| `QdrantEndpoint` / `Qdrant:Endpoint` | AppHost, API, MCP | Qdrant endpoint used to store and search resource chunk embeddings. |
-| `QdrantApiKey` / `Qdrant:ApiKey` | AppHost, API, MCP | API key used to authenticate Qdrant requests. |
-| `FoundryProjectEndpoint` / `Foundry:ProjectEndpoint` | AppHost, API, MCP | Azure AI Foundry project endpoint. The app uses it to build the Cohere provider endpoint for reranking search results. |
-| `FoundryAzureOpenAIEndpoint` / `Foundry:AzureOpenAIEndpoint` | AppHost, API, MCP | Azure OpenAI endpoint used for chat, quiz, roadmap, mentor validation, and embedding generation. |
-| `FoundryApiKey` / `Foundry:ApiKey` | AppHost, API, MCP | API key for Azure AI Foundry or Azure OpenAI requests. |
-| `TavilyApiKey` / `Tavily:ApiKey` | AppHost, API | Tavily API key used by the general chat agent for web search. |
-| `AzureStorageConnectionString` / `AzureStorage:ConnectionString` | AppHost, API | Azure Blob Storage connection string used for uploaded learning resources. |
-| `AuthIssuer` / `Auth:Issuer` | AppHost, API | JWT issuer value. It must match the issuer used when validating access tokens. |
-| `AuthAudience` / `Auth:Audience` | AppHost, API | JWT audience value. For local development, use `Aethria.Api`. |
-| `AuthSigningKey` / `Auth:SigningKey` | AppHost, API | Secret key used to sign and validate JWT access tokens. Use a long random value locally. |
-| `AuthAccessTokenMinutes` / `Auth:AccessTokenMinutes` | AppHost, API | Access token lifetime in minutes. |
-| `AuthRefreshTokenDays` / `Auth:RefreshTokenDays` | AppHost, API | Refresh token lifetime in days. |
-| `AuthRefreshTokenCookieName` / `Auth:RefreshTokenCookieName` | AppHost, API | Name of the cookie that stores the refresh token. |
-| `AuthGoogleClientId` / `Auth:GoogleClientId` | AppHost, API | Google OAuth client ID used to validate Google sign-in tokens. |
+| `DefaultConnection` / `ConnectionStrings:DefaultConnection` / `ConnectionStrings__DefaultConnection` | AppHost, API, MCP | PostgreSQL connection string used for application data, identity, API keys, resources, quizzes, roadmaps, and notifications. |
+| `QdrantEndpoint` / `Qdrant:Endpoint` / `Qdrant__Endpoint` | AppHost, API, MCP | Qdrant endpoint used to store and search resource chunk embeddings. |
+| `QdrantApiKey` / `Qdrant:ApiKey` / `Qdrant__ApiKey` | AppHost, API, MCP | API key used to authenticate Qdrant requests. |
+| `FoundryProjectEndpoint` / `Foundry:ProjectEndpoint` / `Foundry__ProjectEndpoint` | AppHost, API, MCP | Azure AI Foundry project endpoint for Foundry-hosted model/provider APIs. |
+| `FoundryAzureOpenAIEndpoint` / `Foundry:AzureOpenAIEndpoint` / `Foundry__AzureOpenAIEndpoint` | AppHost, API, MCP | Azure OpenAI endpoint for deployed OpenAI-compatible models. |
+| `FoundryApiKey` / `Foundry:ApiKey` / `Foundry__ApiKey` | AppHost, API, MCP | API key for Azure AI Foundry or Azure OpenAI requests. |
+| `TavilyApiKey` / `Tavily:ApiKey` / `Tavily__ApiKey` | AppHost, API | Tavily API key used by the general chat agent for web search. |
+| `AzureStorageConnectionString` / `AzureStorage:ConnectionString` / `AzureStorage__ConnectionString` | AppHost, API | Azure Blob Storage connection string used for uploaded learning resources. |
+| `AuthIssuer` / `Auth:Issuer` / `Auth__Issuer` | AppHost, API | JWT issuer value. It must match the issuer used when validating access tokens. |
+| `AuthAudience` / `Auth:Audience` / `Auth__Audience` | AppHost, API | JWT audience value. For local development, use `Aethria.Api`. |
+| `AuthSigningKey` / `Auth:SigningKey` / `Auth__SigningKey` | AppHost, API | Secret key used to sign and validate JWT access tokens. Use a long random value locally. |
+| `AuthAccessTokenMinutes` / `Auth:AccessTokenMinutes` / `Auth__AccessTokenMinutes` | AppHost, API | Access token lifetime in minutes. |
+| `AuthRefreshTokenDays` / `Auth:RefreshTokenDays` / `Auth__RefreshTokenDays` | AppHost, API | Refresh token lifetime in days. |
+| `AuthRefreshTokenCookieName` / `Auth:RefreshTokenCookieName` / `Auth__RefreshTokenCookieName` | AppHost, API | Name of the cookie that stores the refresh token. |
+| `AuthGoogleClientId` / `Auth:GoogleClientId` / `Auth__GoogleClientId` | AppHost, API | Google OAuth client ID used to validate Google sign-in tokens. |
 | `Cors` | API | Allowed local web origins. Keep `http://localhost:53174` when using the Aspire-hosted Vite app, or add your own web client origin. |
 
 
