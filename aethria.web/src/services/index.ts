@@ -1,4 +1,5 @@
 export * from "./core/client";
+export * from "./core/signalr";
 export * from "./core/stream";
 export * from "./api/types";
 export * from "./api/auth";
@@ -10,3 +11,4 @@ export * from "./api/quiz";
 export * from "./api/resource";
 export * from "./api/roadmap";
 export * from "./api/notification";
+export * from "./api/realtimeNotification";

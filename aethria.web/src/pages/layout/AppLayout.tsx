@@ -20,7 +20,7 @@ import {
   ActionIcon,
   Tooltip,
 } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   MessageSquare,
@@ -38,7 +38,15 @@ import {
   Check,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPageNotifications, markNotificationAsRead } from "../../services";
+import {
+  connectNotificationEvents,
+  getPageNotifications,
+  markNotificationAsRead,
+} from "../../services";
+import type {
+  GetPageNotificationsResponse,
+  NotificationPageItemResponse,
+} from "../../services";
 import { useTranslation as useI18nTranslation } from "react-i18next";
 import { useAppLayout } from "./useAppLayout";
 import { ChangePasswordModal } from "./ChangePasswordModal";
@@ -79,6 +87,7 @@ export default function AppLayout() {
   const queryClient = useQueryClient();
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [markingReadId, setMarkingReadId] = useState<string | null>(null);
+  const userId = user?.userId;
 
   const headerNotificationsQuery = useQuery({
     queryKey: ["notifications", "header"],
@@ -106,6 +115,52 @@ export default function AppLayout() {
   const handleHeaderMarkAsRead = (id: string) => {
     markAsReadMutation.mutate(id);
   };
+
+  useEffect(() => {
+    if (!userId) return;
+
+    let disposed = false;
+    let stopConnection: (() => void) | null = null;
+
+    connectNotificationEvents()
+      .then((connection) => {
+        if (disposed) {
+          void connection.stop();
+          return;
+        }
+
+        stopConnection = () => {
+          void connection.stop();
+        };
+
+        connection.on(
+          "NotificationCreated",
+          (notification: NotificationPageItemResponse) => {
+            queryClient.setQueryData(
+              ["notifications", "header"],
+              (current: GetPageNotificationsResponse | undefined) => {
+                if (!current) return current;
+
+                return {
+                  ...current,
+                  items: [notification, ...current.items].slice(0, 5),
+                  totalCount: current.totalCount + 1,
+                };
+              },
+            );
+            void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+          },
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to connect notification SignalR hub:", error);
+      });
+
+    return () => {
+      disposed = true;
+      stopConnection?.();
+    };
+  }, [queryClient, userId]);
 
   const chatSubItems = [
     {
