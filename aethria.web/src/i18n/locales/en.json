@@ -111,7 +111,9 @@
     },
     "messages": {
       "empty": "Start a new conversation by sending a message below!",
-      "loading": "Thinking..."
+      "loading": "Thinking...",
+      "copy": "Copy message",
+      "copied": "Copied!"
     },
     "tools": {
       "title": "Enabled Tools",

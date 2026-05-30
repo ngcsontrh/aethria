@@ -22,6 +22,7 @@ import {
   Checkbox,
   Title,
   ThemeIcon,
+  CopyButton,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import {
@@ -39,6 +40,8 @@ import {
   FileText,
   PanelLeftClose,
   PanelLeftOpen,
+  Copy,
+  Check,
 } from "lucide-react";
 import type { ChatMode } from "./useChatPage";
 import { useChatPage } from "./useChatPage";
@@ -519,42 +522,76 @@ export default function ChatPage({ mode }: ChatPageProps) {
                       msg.role === "user" ? "flex-end" : "flex-start",
                   }}
                 >
-                  <Paper
-                    p="sm"
-                    radius="md"
-                    withBorder={msg.role === "assistant"}
+                  <Group
+                    gap={4}
+                    align="flex-end"
+                    wrap="nowrap"
                     style={{
-                      maxWidth: "75%",
-                      backgroundColor:
-                        msg.role === "user"
-                          ? "var(--mantine-color-blue-filled)"
-                          : undefined,
-                      color:
-                        msg.role === "user"
-                          ? "var(--mantine-color-white)"
-                          : undefined,
+                      maxWidth: "85%",
+                      flexDirection: msg.role === "user" ? "row" : "row-reverse",
                     }}
                   >
-                    {msg.content === "" && msg.role === "assistant" ? (
-                      <Group gap="xs">
-                        <Loader size="xs" />
-                        <Text size="sm" c="dimmed">
-                          {t("chat.messages.loading")}
+                    <CopyButton value={msg.content} timeout={1500}>
+                      {({ copied, copy }) => (
+                        <Tooltip
+                          label={
+                            copied
+                              ? t("chat.messages.copied")
+                              : t("chat.messages.copy")
+                          }
+                          withArrow
+                        >
+                          <ActionIcon
+                            size="sm"
+                            variant="subtle"
+                            color={copied ? "teal" : "gray"}
+                            onClick={copy}
+                            disabled={!msg.content}
+                            aria-label={t("chat.messages.copy")}
+                          >
+                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                          </ActionIcon>
+                        </Tooltip>
+                      )}
+                    </CopyButton>
+
+                    <Paper
+                      p="sm"
+                      radius="md"
+                      withBorder={msg.role === "assistant"}
+                      style={{
+                        maxWidth: "100%",
+                        backgroundColor:
+                          msg.role === "user"
+                            ? "var(--mantine-color-blue-filled)"
+                            : undefined,
+                        color:
+                          msg.role === "user"
+                            ? "var(--mantine-color-white)"
+                            : undefined,
+                      }}
+                    >
+                      {msg.content === "" && msg.role === "assistant" ? (
+                        <Group gap="xs">
+                          <Loader size="xs" />
+                          <Text size="sm" c="dimmed">
+                            {t("chat.messages.loading")}
+                          </Text>
+                        </Group>
+                      ) : (
+                        <Text
+                          size="sm"
+                          c={msg.isError ? "red" : undefined}
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {msg.content}
                         </Text>
-                      </Group>
-                    ) : (
-                      <Text
-                        size="sm"
-                        c={msg.isError ? "red" : undefined}
-                        style={{
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {msg.content}
-                      </Text>
-                    )}
-                  </Paper>
+                      )}
+                    </Paper>
+                  </Group>
                 </Box>
               ))}
               <div ref={messagesEndRef} />

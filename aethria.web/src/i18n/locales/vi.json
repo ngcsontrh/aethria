@@ -111,7 +111,9 @@
     },
     "messages": {
       "empty": "Bắt đầu một cuộc hỏi đáp mới bằng cách gửi tin nhắn bên dưới!",
-      "loading": "Đang suy nghĩ..."
+      "loading": "Đang suy nghĩ...",
+      "copy": "Sao chép tin nhắn",
+      "copied": "Đã sao chép!"
     },
     "tools": {
       "title": "Công cụ kích hoạt",
