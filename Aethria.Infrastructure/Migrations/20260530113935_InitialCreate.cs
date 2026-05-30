@@ -1,17 +1,54 @@
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Pgvector;
 
 #nullable disable
 
 namespace Aethria.Infrastructure.Migrations
 {
+    /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:PostgresExtension:vector", ",,");
+            migrationBuilder.CreateTable(
+                name: "api_keys",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    token_hash = table.Column<string>(type: "character varying(88)", maxLength: 88, nullable: false),
+                    expires_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    revoked_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    last_four_chars = table.Column<string>(type: "character varying(4)", maxLength: 4, nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_api_keys", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "chat_sessions",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    mentor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    resource_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    description = table.Column<string>(type: "text", nullable: true),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_chat_sessions", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "mentors",
@@ -37,8 +74,8 @@ namespace Aethria.Infrastructure.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    message = table.Column<string>(type: "text", nullable: false),
+                    type = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    data = table.Column<string>(type: "jsonb", nullable: false),
                     is_read = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
@@ -84,6 +121,24 @@ namespace Aethria.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_quizzes", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "refresh_tokens",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    token_hash = table.Column<string>(type: "character varying(88)", maxLength: 88, nullable: false),
+                    expires_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    revoked_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_refresh_tokens", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -170,6 +225,28 @@ namespace Aethria.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "chat_messages",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    session_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    content = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_chat_messages", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_chat_messages_chat_sessions_session_id",
+                        column: x => x.session_id,
+                        principalTable: "chat_sessions",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "submission_answers",
                 columns: table => new
                 {
@@ -233,53 +310,6 @@ namespace Aethria.Infrastructure.Migrations
                         name: "fk_quiz_versions_quizzes_quiz_id",
                         column: x => x.quiz_id,
                         principalTable: "quizzes",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "chat_sessions",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    mentor_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    resource_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    description = table.Column<string>(type: "text", nullable: true),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_chat_sessions", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_chat_sessions_resources_resource_id",
-                        column: x => x.resource_id,
-                        principalTable: "resources",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "resource_chunks",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    resource_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    chunk_index = table.Column<int>(type: "integer", nullable: false),
-                    content = table.Column<string>(type: "text", nullable: false),
-                    embedding = table.Column<Vector>(type: "vector(1536)", nullable: true),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_resource_chunks", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_resource_chunks_resources_resource_id",
-                        column: x => x.resource_id,
-                        principalTable: "resources",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -438,28 +468,6 @@ namespace Aethria.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "chat_messages",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    session_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    content = table.Column<string>(type: "text", nullable: false),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_chat_messages", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_chat_messages_chat_sessions_session_id",
-                        column: x => x.session_id,
-                        principalTable: "chat_sessions",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "question_option_snapshots",
                 columns: table => new
                 {
@@ -482,10 +490,21 @@ namespace Aethria.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                table: "users",
-                columns: ["id", "access_failed_count", "concurrency_stamp", "created_at", "email", "email_confirmed", "lockout_enabled", "lockout_end", "normalized_email", "normalized_user_name", "password_hash", "phone_number", "phone_number_confirmed", "security_stamp", "two_factor_enabled", "updated_at", "user_name"],
-                values: [new Guid("11111111-1111-1111-1111-111111111111"), 0, "11111111-1111-1111-1111-111111111111", new DateTimeOffset(new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "mockuser@Aethria.local", true, false, null, "MOCKUSER@Aethria.LOCAL", "MOCKUSER@Aethria.LOCAL", null, null, false, "11111111-1111-1111-1111-111111111111", false, new DateTimeOffset(new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "mockuser@Aethria.local"]);
+            migrationBuilder.CreateIndex(
+                name: "ix_api_keys_expires_at_status",
+                table: "api_keys",
+                columns: new[] { "expires_at", "status" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_api_keys_token_hash",
+                table: "api_keys",
+                column: "token_hash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_api_keys_user_id_status",
+                table: "api_keys",
+                columns: new[] { "user_id", "status" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_chat_messages_session_id",
@@ -493,19 +512,29 @@ namespace Aethria.Infrastructure.Migrations
                 column: "session_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_chat_sessions_mentor_id",
+                name: "ix_chat_sessions_general_user_id_updated_at",
                 table: "chat_sessions",
-                column: "mentor_id");
+                columns: new[] { "user_id", "updated_at" },
+                descending: new[] { false, true },
+                filter: "mentor_id IS NULL AND resource_id IS NULL");
 
             migrationBuilder.CreateIndex(
-                name: "ix_chat_sessions_resource_id",
+                name: "ix_chat_sessions_mentor_id_user_id_updated_at",
                 table: "chat_sessions",
-                column: "resource_id");
+                columns: new[] { "mentor_id", "user_id", "updated_at" },
+                descending: new[] { false, false, true });
 
             migrationBuilder.CreateIndex(
-                name: "ix_notifications_is_read",
+                name: "ix_chat_sessions_resource_id_user_id_updated_at",
+                table: "chat_sessions",
+                columns: new[] { "resource_id", "user_id", "updated_at" },
+                descending: new[] { false, false, true });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notifications_user_id_is_read_created_at",
                 table: "notifications",
-                column: "is_read");
+                columns: new[] { "user_id", "is_read", "created_at" },
+                descending: new[] { false, false, true });
 
             migrationBuilder.CreateIndex(
                 name: "ix_question_option_snapshots_question_snapshot_id",
@@ -540,7 +569,7 @@ namespace Aethria.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "ix_quiz_versions_quiz_id_version_number",
                 table: "quiz_versions",
-                columns: ["quiz_id", "version_number"],
+                columns: new[] { "quiz_id", "version_number" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -549,16 +578,20 @@ namespace Aethria.Infrastructure.Migrations
                 column: "resource_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_resource_chunks_embedding",
-                table: "resource_chunks",
-                column: "embedding")
-                .Annotation("Npgsql:IndexMethod", "hnsw")
-                .Annotation("Npgsql:IndexOperators", new[] { "vector_cosine_ops" });
+                name: "ix_refresh_tokens_expires_at_status",
+                table: "refresh_tokens",
+                columns: new[] { "expires_at", "status" });
 
             migrationBuilder.CreateIndex(
-                name: "ix_resource_chunks_resource_id",
-                table: "resource_chunks",
-                column: "resource_id");
+                name: "ix_refresh_tokens_token_hash",
+                table: "refresh_tokens",
+                column: "token_hash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_refresh_tokens_user_id_status",
+                table: "refresh_tokens",
+                columns: new[] { "user_id", "status" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_roadmaps_resource_id",
@@ -613,8 +646,12 @@ namespace Aethria.Infrastructure.Migrations
                 unique: true);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "api_keys");
+
             migrationBuilder.DropTable(
                 name: "chat_messages");
 
@@ -631,7 +668,10 @@ namespace Aethria.Infrastructure.Migrations
                 name: "question_options");
 
             migrationBuilder.DropTable(
-                name: "resource_chunks");
+                name: "refresh_tokens");
+
+            migrationBuilder.DropTable(
+                name: "resources");
 
             migrationBuilder.DropTable(
                 name: "roadmaps");
@@ -671,9 +711,6 @@ namespace Aethria.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "users");
-
-            migrationBuilder.DropTable(
-                name: "resources");
 
             migrationBuilder.DropTable(
                 name: "quiz_versions");

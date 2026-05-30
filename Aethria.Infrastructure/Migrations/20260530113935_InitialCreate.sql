@@ -5,7 +5,31 @@
 );
 
 START TRANSACTION;
-CREATE EXTENSION IF NOT EXISTS vector;
+CREATE TABLE api_keys (
+    id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    name character varying(100) NOT NULL,
+    token_hash character varying(88) NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    status character varying(20) NOT NULL,
+    revoked_at timestamp with time zone,
+    last_four_chars character varying(4) NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT pk_api_keys PRIMARY KEY (id)
+);
+
+CREATE TABLE chat_sessions (
+    id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    mentor_id uuid,
+    resource_id uuid,
+    name character varying(255) NOT NULL,
+    description text,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT pk_chat_sessions PRIMARY KEY (id)
+);
 
 CREATE TABLE mentors (
     id uuid NOT NULL,
@@ -22,8 +46,8 @@ CREATE TABLE mentors (
 CREATE TABLE notifications (
     id uuid NOT NULL,
     user_id uuid NOT NULL,
-    name character varying(255) NOT NULL,
-    message text NOT NULL,
+    type character varying(255) NOT NULL,
+    data jsonb NOT NULL,
     is_read boolean NOT NULL DEFAULT FALSE,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
@@ -54,6 +78,18 @@ CREATE TABLE quizzes (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     CONSTRAINT pk_quizzes PRIMARY KEY (id)
+);
+
+CREATE TABLE refresh_tokens (
+    id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    token_hash character varying(88) NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    status character varying(20) NOT NULL,
+    revoked_at timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT pk_refresh_tokens PRIMARY KEY (id)
 );
 
 CREATE TABLE resources (
@@ -115,6 +151,17 @@ CREATE TABLE users (
     CONSTRAINT pk_users PRIMARY KEY (id)
 );
 
+CREATE TABLE chat_messages (
+    id uuid NOT NULL,
+    session_id uuid NOT NULL,
+    role character varying(50) NOT NULL,
+    content text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT pk_chat_messages PRIMARY KEY (id),
+    CONSTRAINT fk_chat_messages_chat_sessions_session_id FOREIGN KEY (session_id) REFERENCES chat_sessions (id) ON DELETE CASCADE
+);
+
 CREATE TABLE submission_answers (
     id uuid NOT NULL,
     quiz_submission_id uuid NOT NULL,
@@ -148,31 +195,6 @@ CREATE TABLE quiz_versions (
     updated_at timestamp with time zone NOT NULL,
     CONSTRAINT pk_quiz_versions PRIMARY KEY (id),
     CONSTRAINT fk_quiz_versions_quizzes_quiz_id FOREIGN KEY (quiz_id) REFERENCES quizzes (id) ON DELETE CASCADE
-);
-
-CREATE TABLE chat_sessions (
-    id uuid NOT NULL,
-    user_id uuid NOT NULL,
-    mentor_id uuid,
-    resource_id uuid,
-    name character varying(255) NOT NULL,
-    description text,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    CONSTRAINT pk_chat_sessions PRIMARY KEY (id),
-    CONSTRAINT fk_chat_sessions_resources_resource_id FOREIGN KEY (resource_id) REFERENCES resources (id) ON DELETE SET NULL
-);
-
-CREATE TABLE resource_chunks (
-    id uuid NOT NULL,
-    resource_id uuid NOT NULL,
-    chunk_index integer NOT NULL,
-    content text NOT NULL,
-    embedding vector(1536),
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    CONSTRAINT pk_resource_chunks PRIMARY KEY (id),
-    CONSTRAINT fk_resource_chunks_resources_resource_id FOREIGN KEY (resource_id) REFERENCES resources (id) ON DELETE CASCADE
 );
 
 CREATE TABLE role_claims (
@@ -244,17 +266,6 @@ CREATE TABLE question_snapshots (
     CONSTRAINT fk_question_snapshots_quiz_versions_quiz_version_id FOREIGN KEY (quiz_version_id) REFERENCES quiz_versions (id) ON DELETE CASCADE
 );
 
-CREATE TABLE chat_messages (
-    id uuid NOT NULL,
-    session_id uuid NOT NULL,
-    role character varying(50) NOT NULL,
-    content text NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    CONSTRAINT pk_chat_messages PRIMARY KEY (id),
-    CONSTRAINT fk_chat_messages_chat_sessions_session_id FOREIGN KEY (session_id) REFERENCES chat_sessions (id) ON DELETE CASCADE
-);
-
 CREATE TABLE question_option_snapshots (
     id uuid NOT NULL,
     question_snapshot_id uuid NOT NULL,
@@ -267,16 +278,21 @@ CREATE TABLE question_option_snapshots (
     CONSTRAINT fk_question_option_snapshots_question_snapshots_question_snaps FOREIGN KEY (question_snapshot_id) REFERENCES question_snapshots (id) ON DELETE CASCADE
 );
 
-INSERT INTO users (id, access_failed_count, concurrency_stamp, created_at, email, email_confirmed, lockout_enabled, lockout_end, normalized_email, normalized_user_name, password_hash, phone_number, phone_number_confirmed, security_stamp, two_factor_enabled, updated_at, user_name)
-VALUES ('11111111-1111-1111-1111-111111111111', 0, '11111111-1111-1111-1111-111111111111', TIMESTAMPTZ '2024-01-01T00:00:00+00:00', 'mockuser@Aethria.local', TRUE, FALSE, NULL, 'MOCKUSER@Aethria.LOCAL', 'MOCKUSER@Aethria.LOCAL', NULL, NULL, FALSE, '11111111-1111-1111-1111-111111111111', FALSE, TIMESTAMPTZ '2024-01-01T00:00:00+00:00', 'mockuser@Aethria.local');
+CREATE INDEX ix_api_keys_expires_at_status ON api_keys (expires_at, status);
+
+CREATE UNIQUE INDEX ix_api_keys_token_hash ON api_keys (token_hash);
+
+CREATE INDEX ix_api_keys_user_id_status ON api_keys (user_id, status);
 
 CREATE INDEX ix_chat_messages_session_id ON chat_messages (session_id);
 
-CREATE INDEX ix_chat_sessions_mentor_id ON chat_sessions (mentor_id);
+CREATE INDEX ix_chat_sessions_general_user_id_updated_at ON chat_sessions (user_id, updated_at DESC) WHERE mentor_id IS NULL AND resource_id IS NULL;
 
-CREATE INDEX ix_chat_sessions_resource_id ON chat_sessions (resource_id);
+CREATE INDEX ix_chat_sessions_mentor_id_user_id_updated_at ON chat_sessions (mentor_id, user_id, updated_at DESC);
 
-CREATE INDEX ix_notifications_is_read ON notifications (is_read);
+CREATE INDEX ix_chat_sessions_resource_id_user_id_updated_at ON chat_sessions (resource_id, user_id, updated_at DESC);
+
+CREATE INDEX ix_notifications_user_id_is_read_created_at ON notifications (user_id, is_read, created_at DESC);
 
 CREATE INDEX ix_question_option_snapshots_question_snapshot_id ON question_option_snapshots (question_snapshot_id);
 
@@ -294,9 +310,11 @@ CREATE UNIQUE INDEX ix_quiz_versions_quiz_id_version_number ON quiz_versions (qu
 
 CREATE INDEX ix_quizzes_resource_id ON quizzes (resource_id);
 
-CREATE INDEX ix_resource_chunks_embedding ON resource_chunks USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX ix_refresh_tokens_expires_at_status ON refresh_tokens (expires_at, status);
 
-CREATE INDEX ix_resource_chunks_resource_id ON resource_chunks (resource_id);
+CREATE UNIQUE INDEX ix_refresh_tokens_token_hash ON refresh_tokens (token_hash);
+
+CREATE INDEX ix_refresh_tokens_user_id_status ON refresh_tokens (user_id, status);
 
 CREATE INDEX ix_roadmaps_resource_id ON roadmaps (resource_id);
 
@@ -319,7 +337,7 @@ CREATE INDEX ix_users_normalized_email ON users (normalized_email);
 CREATE UNIQUE INDEX ix_users_normalized_user_name ON users (normalized_user_name);
 
 INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
-VALUES ('20260512100657_InitialCreate', '10.0.7');
+VALUES ('20260530113935_InitialCreate', '10.0.8');
 
 COMMIT;
 

@@ -31,7 +31,6 @@
     <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="PdfPig" />
-    <PackageReference Include="Pgvector.EntityFrameworkCore" />
     <PackageReference Include="Qdrant.Client" />
     <PackageReference Include="Tavily" />
   </ItemGroup>
