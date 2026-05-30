@@ -33,7 +33,7 @@ interface QuizFormProps {
   submitting: boolean;
   aiGenerating: boolean;
   aiStatus: string;
-  aiMessage: string;
+  aiMessageIndex: number;
   resourcesOptions: { value: string; label: string }[];
   stopAiGeneration: () => void;
 }
@@ -46,7 +46,7 @@ export default function QuizForm({
   submitting,
   aiGenerating,
   aiStatus,
-  aiMessage,
+  aiMessageIndex,
   resourcesOptions,
   stopAiGeneration,
 }: QuizFormProps) {
@@ -68,11 +68,20 @@ export default function QuizForm({
     if (aiGenerating) {
       let progressPercent = 10;
       let progressColor = "blue";
+      const loadingMessages = t("quiz.aiProgress.loadingMessages", {
+        returnObjects: true,
+      }) as string[];
+      const fallbackMessages = [
+        t("quiz.aiProgress.started"),
+        t("quiz.aiProgress.generating"),
+      ];
+      const messages = Array.isArray(loadingMessages)
+        ? loadingMessages
+        : fallbackMessages;
+      const loadingMessage = messages[aiMessageIndex % messages.length];
 
       if (aiStatus === "Started") {
         progressPercent = 30;
-      } else if (aiStatus === "GeneratingQuestions") {
-        progressPercent = 70;
       } else if (aiStatus === "Completed") {
         progressPercent = 100;
         progressColor = "green";
@@ -104,13 +113,19 @@ export default function QuizForm({
             }}
           >
             <Text size="xs" fw={700} c="dimmed" mb={4}>
-              LOG STATUS: {aiStatus}
+              {t("quiz.aiProgress.statusLabel")}: {aiStatus}
             </Text>
             <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-              {aiMessage || t("quiz.aiProgress.started")}
+              {aiStatus === "Completed"
+                ? t("quiz.aiProgress.completed")
+                : aiStatus === "Failed"
+                  ? t("quiz.aiProgress.failed")
+                  : aiStatus === "Canceled"
+                    ? t("quiz.aiProgress.canceled")
+                    : loadingMessage}
             </Text>
           </Paper>
-          {aiStatus !== "Completed" && aiStatus !== "Failed" && (
+          {aiStatus !== "Completed" && aiStatus !== "Failed" && aiStatus !== "Canceled" && (
             <Button variant="outline" color="red" onClick={stopAiGeneration}>
               {t("quiz.form.cancel")}
             </Button>

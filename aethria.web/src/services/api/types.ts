@@ -342,18 +342,6 @@ export const CreateAIQuizRequestSchema = z.object({
 
 export type CreateAIQuizRequest = z.infer<typeof CreateAIQuizRequestSchema>;
 
-export type CreateAIQuizStreamStatus =
-  | "Started"
-  | "GeneratingQuestions"
-  | "Completed"
-  | "Failed";
-
-export interface CreateAIQuizStreamEvent {
-  status: CreateAIQuizStreamStatus;
-  message: string;
-  quizId?: string;
-}
-
 export const UpdateOptionModelSchema = z.object({
   text: z.string(),
   orderIndex: z.number(),
@@ -457,18 +445,6 @@ export const GenerateAIRoadmapRequestSchema = z.object({
 export type GenerateAIRoadmapRequest = z.infer<
   typeof GenerateAIRoadmapRequestSchema
 >;
-
-export type GenerateAIRoadmapStreamStatus =
-  | "Started"
-  | "GeneratingRoadmap"
-  | "Completed"
-  | "Failed";
-
-export interface GenerateAIRoadmapStreamEvent {
-  status: GenerateAIRoadmapStreamStatus;
-  message: string;
-  roadmapId?: string;
-}
 
 export interface NotificationPageItemResponse {
   id: string;

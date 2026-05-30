@@ -1,5 +1,4 @@
 import { api } from "../core/client";
-import { streamSignalR } from "../core/stream";
 import type {
   CreateBlankQuizRequest,
   GetPageQuizzesResponse,
@@ -12,7 +11,6 @@ import type {
   GetQuizSubmissionHistoryResponse,
   GetSubmissionByIdResponse,
   CreateAIQuizRequest,
-  CreateAIQuizStreamEvent,
 } from "./types";
 
 export async function createBlankQuiz(
@@ -130,14 +128,14 @@ export async function getQuizSubmissionById(
   return response.data;
 }
 
-export function createAIQuizStream(
+export async function createAIQuiz(
   request: CreateAIQuizRequest,
-  abortSignal?: AbortSignal,
-): AsyncGenerator<CreateAIQuizStreamEvent> {
-  return streamSignalR<CreateAIQuizStreamEvent>(
-    "/hubs/quizzes",
-    "CreateAIQuizStream",
-    [request],
-    abortSignal,
+  signal?: AbortSignal,
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>(
+    "/api/quizzes/ai",
+    request,
+    { signal },
   );
+  return response.data;
 }

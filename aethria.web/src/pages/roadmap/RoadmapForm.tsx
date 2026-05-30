@@ -20,7 +20,7 @@ interface RoadmapFormProps {
   submitting: boolean;
   aiGenerating: boolean;
   aiStatus: string;
-  aiMessage: string;
+  aiMessageIndex: number;
   stopAiGeneration: () => void;
 }
 
@@ -31,7 +31,7 @@ export default function RoadmapForm({
   submitting,
   aiGenerating,
   aiStatus,
-  aiMessage,
+  aiMessageIndex,
   stopAiGeneration,
 }: RoadmapFormProps) {
   const { t, form, handleSubmit } = useRoadmapForm(onSubmit);
@@ -40,15 +40,24 @@ export default function RoadmapForm({
   if (aiGenerating) {
     let progressPercent = 10;
     let progressColor = "blue";
+    const loadingMessages = t("roadmap.aiProgress.loadingMessages", {
+      returnObjects: true,
+    }) as string[];
+    const fallbackMessages = [
+      t("roadmap.aiProgress.started"),
+      t("roadmap.aiProgress.generating"),
+    ];
+    const messages = Array.isArray(loadingMessages)
+      ? loadingMessages
+      : fallbackMessages;
+    const loadingMessage = messages[aiMessageIndex % messages.length];
 
     if (aiStatus === "Started") {
-      progressPercent = 30;
-    } else if (aiStatus === "GeneratingRoadmap") {
-      progressPercent = 70;
+      progressPercent = 35;
     } else if (aiStatus === "Completed") {
       progressPercent = 100;
       progressColor = "green";
-    } else if (aiStatus === "Failed") {
+    } else if (aiStatus === "Failed" || aiStatus === "Canceled") {
       progressPercent = 100;
       progressColor = "red";
     }
@@ -63,7 +72,11 @@ export default function RoadmapForm({
           <Progress
             value={progressPercent}
             color={progressColor}
-            animated={aiStatus !== "Completed" && aiStatus !== "Failed"}
+            animated={
+              aiStatus !== "Completed" &&
+              aiStatus !== "Failed" &&
+              aiStatus !== "Canceled"
+            }
           />
         </Box>
         <Paper
@@ -76,17 +89,25 @@ export default function RoadmapForm({
           }}
         >
           <Text size="xs" fw={700} c="dimmed" mb={4}>
-            LOG STATUS: {aiStatus}
+            {t("roadmap.aiProgress.statusLabel")}: {aiStatus}
           </Text>
           <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-            {aiMessage || t("roadmap.aiProgress.started")}
+            {aiStatus === "Completed"
+              ? t("roadmap.aiProgress.completed")
+              : aiStatus === "Failed"
+                ? t("roadmap.aiProgress.failed")
+                : aiStatus === "Canceled"
+                  ? t("roadmap.aiProgress.canceled")
+                  : loadingMessage}
           </Text>
         </Paper>
-        {aiStatus !== "Completed" && aiStatus !== "Failed" && (
-          <Button variant="outline" color="red" onClick={stopAiGeneration}>
-            {t("roadmap.form.cancel")}
-          </Button>
-        )}
+        {aiStatus !== "Completed" &&
+          aiStatus !== "Failed" &&
+          aiStatus !== "Canceled" && (
+            <Button variant="outline" color="red" onClick={stopAiGeneration}>
+              {t("roadmap.form.cancel")}
+            </Button>
+          )}
       </Stack>
     );
   }

@@ -1,22 +1,20 @@
 import { api } from "../core/client";
-import { streamSignalR } from "../core/stream";
 import type {
   GenerateAIRoadmapRequest,
-  GenerateAIRoadmapStreamEvent,
   GetPageRoadmapsResponse,
   GetRoadmapByIdResponse,
 } from "./types";
 
-export function generateAIRoadmapStream(
+export async function generateAIRoadmap(
   request: GenerateAIRoadmapRequest,
-  abortSignal?: AbortSignal,
-): AsyncGenerator<GenerateAIRoadmapStreamEvent> {
-  return streamSignalR<GenerateAIRoadmapStreamEvent>(
-    "/hubs/roadmaps",
-    "GenerateAIRoadmapStream",
-    [request],
-    abortSignal,
+  signal?: AbortSignal,
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>(
+    "/api/roadmaps/ai",
+    request,
+    { signal },
   );
+  return response.data;
 }
 
 export async function getPageRoadmaps(

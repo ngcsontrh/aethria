@@ -10,7 +10,7 @@ import {
   updateQuiz,
   deleteQuiz,
   getResourceSelector,
-  createAIQuizStream,
+  createAIQuiz,
 } from "../../services";
 import type { QuizPageItem } from "../../services";
 import type { QuizFormValues, EditingQuizData } from "./useQuizForm";
@@ -33,10 +33,10 @@ export function useQuizPage() {
   const [editingQuiz, setEditingQuiz] = useState<EditingQuizData | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<QuizPageItem | null>(null);
 
-  // AI generation SSE state
+  // AI generation state
   const [aiGenerating, setAiGenerating] = useState(false);
-  const [aiStatus, setAiStatus] = useState("");
-  const [aiMessage, setAiMessage] = useState("");
+  const [aiStatus, setAiStatus] = useState("Started");
+  const [aiMessageIndex, setAiMessageIndex] = useState(0);
 
   // Attempt Quiz State
   const [attemptQuiz, setAttemptQuiz] = useState<QuizPageItem | null>(null);
@@ -135,7 +135,6 @@ export function useQuizPage() {
     aiAbortControllerRef.current?.abort();
     setAiGenerating(false);
     setAiStatus("Canceled");
-    setAiMessage("AI Quiz generation was canceled.");
   }, []);
 
   useEffect(() => {
@@ -144,17 +143,30 @@ export function useQuizPage() {
     };
   }, []);
 
-  // 5. SSE stream generation for AI quiz
+  useEffect(() => {
+    if (!aiGenerating) return;
+
+    const intervalId = window.setInterval(() => {
+      setAiMessageIndex((current) => {
+        const next = Math.floor(Math.random() * 5);
+        return next === current ? (next + 1) % 5 : next;
+      });
+    }, 3500);
+
+    return () => window.clearInterval(intervalId);
+  }, [aiGenerating]);
+
+  // 5. Synchronous HTTP generation for AI quiz
   const generateAIQuiz = async (data: QuizFormValues) => {
     setAiGenerating(true);
     setAiStatus("Started");
-    setAiMessage("");
+    setAiMessageIndex(Math.floor(Math.random() * 5));
     
     const abortController = new AbortController();
     aiAbortControllerRef.current = abortController;
 
     try {
-      const stream = createAIQuizStream({
+      await createAIQuiz({
         name: data.name,
         description: data.description || undefined,
         resourceId: data.resourceId,
@@ -162,31 +174,22 @@ export function useQuizPage() {
         numberOfQuestions: data.numberOfQuestions!,
       }, abortController.signal);
 
-      for await (const event of stream) {
-        if (abortController.signal.aborted) break;
-
-        setAiStatus(event.status);
-        setAiMessage(event.message || "");
-
-        if (event.status === "Completed") {
-          await queryClient.invalidateQueries({ queryKey: quizKeys.pages() });
-          notifications.show({
-            title: t("notifications.success"),
-            message: t("notifications.quiz.createSuccess"),
-            color: "green",
-          });
-          setTimeout(() => {
-            closeForm();
-            setAiGenerating(false);
-          }, 1500);
-          return;
-        }
-      }
+      setAiStatus("Completed");
+      await queryClient.invalidateQueries({ queryKey: quizKeys.pages() });
+      notifications.show({
+        title: t("notifications.success"),
+        message: t("notifications.quiz.createSuccess"),
+        color: "green",
+      });
+      setTimeout(() => {
+        setAiGenerating(false);
+        setFormOpened(false);
+        setEditingQuiz(null);
+      }, 1500);
     } catch (err) {
       if (!abortController.signal.aborted) {
         const error = err as Error;
         setAiStatus("Failed");
-        setAiMessage(error.message || "Failed to generate quiz");
         notifications.show({
           title: t("notifications.error"),
           message: error.message || t("notifications.quiz.createError"),
@@ -294,7 +297,7 @@ export function useQuizPage() {
     submitting,
     aiGenerating,
     aiStatus,
-    aiMessage,
+    aiMessageIndex,
     stopAiGeneration,
     openCreate,
     openEdit,

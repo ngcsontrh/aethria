@@ -222,7 +222,16 @@
       "started": "Connecting to AI service...",
       "generating": "Generating questions from resource...",
       "completed": "Quiz generated successfully!",
-      "failed": "Failed to generate quiz. Please try again."
+      "failed": "Failed to generate quiz. Please try again.",
+      "canceled": "Quiz generation was canceled.",
+      "statusLabel": "Status",
+      "loadingMessages": [
+        "Scanning the resource for question-worthy details...",
+        "Shaping the key concepts into a quiz set...",
+        "Mixing easy, medium, and harder checks...",
+        "Reviewing answer choices to avoid ambiguous questions...",
+        "Packaging the quiz and saving it to your library..."
+      ]
     },
     "validation": {
       "nameRequired": "Name is required",
@@ -305,7 +314,16 @@
       "started": "Connecting to AI service...",
       "generating": "Analyzing resource and building roadmap...",
       "completed": "Roadmap generated successfully!",
-      "failed": "Failed to generate roadmap. Please try again."
+      "failed": "Failed to generate roadmap. Please try again.",
+      "canceled": "Roadmap generation was canceled.",
+      "statusLabel": "Status",
+      "loadingMessages": [
+        "Reading the resource and identifying learning milestones...",
+        "Grouping concepts into a practical study path...",
+        "Ordering roadmap steps from foundations to applied practice...",
+        "Drafting checkpoint goals for each learning phase...",
+        "Rendering the roadmap and visual flowchart..."
+      ]
     },
     "validation": {
       "nameRequired": "Name is required",

@@ -222,7 +222,16 @@
       "started": "Đang kết nối với dịch vụ AI...",
       "generating": "Đang tạo câu hỏi từ tài liệu...",
       "completed": "Tạo bài trắc nghiệm thành công!",
-      "failed": "Tạo bài trắc nghiệm thất bại. Vui lòng thử lại."
+      "failed": "Tạo bài trắc nghiệm thất bại. Vui lòng thử lại.",
+      "canceled": "Đã hủy tạo bài trắc nghiệm.",
+      "statusLabel": "Trạng thái",
+      "loadingMessages": [
+        "Đang nghiền ngẫm tài liệu để tìm điểm có thể ra đề...",
+        "Đang gom các khái niệm quan trọng thành bộ câu hỏi...",
+        "Đang pha trộn mức độ dễ, vừa và khó cho bài trắc nghiệm...",
+        "Đang rà lại lựa chọn đúng để tránh đáp án mơ hồ...",
+        "Đang đóng gói bài trắc nghiệm và lưu vào thư viện của bạn..."
+      ]
     },
     "validation": {
       "nameRequired": "Vui lòng nhập tên",
@@ -305,7 +314,16 @@
       "started": "Đang kết nối với dịch vụ AI...",
       "generating": "Đang phân tích tài liệu và dựng lộ trình...",
       "completed": "Tạo lộ trình học tập thành công!",
-      "failed": "Tạo lộ trình học tập thất bại. Vui lòng thử lại."
+      "failed": "Tạo lộ trình học tập thất bại. Vui lòng thử lại.",
+      "canceled": "Đã hủy tạo lộ trình học tập.",
+      "statusLabel": "Trạng thái",
+      "loadingMessages": [
+        "Đang đọc tài liệu và xác định các mốc học tập...",
+        "Đang gom nhóm khái niệm thành lộ trình thực tế...",
+        "Đang sắp xếp các bước từ nền tảng đến thực hành...",
+        "Đang soạn mục tiêu kiểm tra cho từng giai đoạn học...",
+        "Đang dựng lộ trình và biểu đồ trực quan..."
+      ]
     },
     "validation": {
       "nameRequired": "Vui lòng nhập tên",

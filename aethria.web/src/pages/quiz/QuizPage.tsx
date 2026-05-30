@@ -30,7 +30,7 @@ export default function QuizPage() {
     submitting,
     aiGenerating,
     aiStatus,
-    aiMessage,
+    aiMessageIndex,
     stopAiGeneration,
     openCreate,
     openEdit,
@@ -83,7 +83,7 @@ export default function QuizPage() {
           submitting={submitting}
           aiGenerating={aiGenerating}
           aiStatus={aiStatus}
-          aiMessage={aiMessage}
+          aiMessageIndex={aiMessageIndex}
           resourcesOptions={resourcesOptions}
           stopAiGeneration={stopAiGeneration}
         />

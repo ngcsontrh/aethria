@@ -7,7 +7,7 @@ import {
   getRoadmapById,
   deleteRoadmap,
   getResourceSelector,
-  generateAIRoadmapStream,
+  generateAIRoadmap as generateAIRoadmapApi,
 } from "../../services";
 import type { RoadmapListItemResponse } from "../../services";
 import type { RoadmapFormValues } from "./useRoadmapForm";
@@ -30,10 +30,10 @@ export function useRoadmapPage() {
     useState<RoadmapListItemResponse | null>(null);
   const [viewingRoadmapId, setViewingRoadmapId] = useState<string | null>(null);
 
-  // AI generation SSE state
+  // AI generation state
   const [aiGenerating, setAiGenerating] = useState(false);
-  const [aiStatus, setAiStatus] = useState("");
-  const [aiMessage, setAiMessage] = useState("");
+  const [aiStatus, setAiStatus] = useState("Started");
+  const [aiMessageIndex, setAiMessageIndex] = useState(0);
 
   const aiAbortControllerRef = useRef<AbortController | null>(null);
 
@@ -41,7 +41,6 @@ export function useRoadmapPage() {
     aiAbortControllerRef.current?.abort();
     setAiGenerating(false);
     setAiStatus("Canceled");
-    setAiMessage("AI Roadmap generation was canceled.");
   }, []);
 
   useEffect(() => {
@@ -49,6 +48,19 @@ export function useRoadmapPage() {
       aiAbortControllerRef.current?.abort();
     };
   }, []);
+
+  useEffect(() => {
+    if (!aiGenerating) return;
+
+    const intervalId = window.setInterval(() => {
+      setAiMessageIndex((current) => {
+        const next = Math.floor(Math.random() * 5);
+        return next === current ? (next + 1) % 5 : next;
+      });
+    }, 3500);
+
+    return () => window.clearInterval(intervalId);
+  }, [aiGenerating]);
 
   const pageSize = 10;
 
@@ -91,53 +103,43 @@ export function useRoadmapPage() {
     },
   });
 
-  // 5. SSE stream generation for AI roadmap
+  // 5. Synchronous HTTP generation for AI roadmap
   const generateAIRoadmap = async (data: RoadmapFormValues) => {
     setAiGenerating(true);
     setAiStatus("Started");
-    setAiMessage("");
+    setAiMessageIndex(Math.floor(Math.random() * 5));
 
     const abortController = new AbortController();
     aiAbortControllerRef.current = abortController;
 
     try {
-      const stream = generateAIRoadmapStream({
+      await generateAIRoadmapApi({
         name: data.name,
         description: data.description || undefined,
         resourceId: data.resourceId,
         prompt: data.prompt || undefined,
       }, abortController.signal);
 
-      for await (const event of stream) {
-        if (abortController.signal.aborted) break;
-
-        setAiStatus(event.status);
-        setAiMessage(event.message || "");
-
-        if (event.status === "Completed") {
-          await queryClient.invalidateQueries({
-            queryKey: roadmapKeys.pages(),
-          });
-          notifications.show({
-            title: t("notifications.success"),
-            message: t("roadmap.aiProgress.completed"),
-            color: "green",
-          });
-          setTimeout(() => {
-            closeForm();
-            setAiGenerating(false);
-          }, 1500);
-          return;
-        }
-      }
+      setAiStatus("Completed");
+      await queryClient.invalidateQueries({
+        queryKey: roadmapKeys.pages(),
+      });
+      notifications.show({
+        title: t("notifications.success"),
+        message: t("roadmap.aiProgress.completed"),
+        color: "green",
+      });
+      setTimeout(() => {
+        setAiGenerating(false);
+        setFormOpened(false);
+      }, 1500);
     } catch (err) {
       if (!abortController.signal.aborted) {
         const error = err as Error;
         setAiStatus("Failed");
-        setAiMessage(error.message || "Failed to generate roadmap");
         notifications.show({
           title: t("notifications.error"),
-          message: t("roadmap.aiProgress.failed"),
+          message: error.message || t("roadmap.aiProgress.failed"),
           color: "red",
         });
         setTimeout(() => {
@@ -164,9 +166,7 @@ export function useRoadmapPage() {
   };
 
   const closeForm = () => {
-    if (aiGenerating) {
-      stopAiGeneration();
-    }
+    if (aiGenerating) return;
     setFormOpened(false);
   };
 
@@ -210,7 +210,7 @@ export function useRoadmapPage() {
     submitting,
     aiGenerating,
     aiStatus,
-    aiMessage,
+    aiMessageIndex,
     stopAiGeneration,
     openCreate,
     closeForm,

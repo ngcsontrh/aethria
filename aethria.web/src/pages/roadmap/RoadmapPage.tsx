@@ -37,7 +37,7 @@ export default function RoadmapPage() {
     submitting,
     aiGenerating,
     aiStatus,
-    aiMessage,
+    aiMessageIndex,
     stopAiGeneration,
     openCreate,
     closeForm,
@@ -195,7 +195,7 @@ export default function RoadmapPage() {
           submitting={submitting}
           aiGenerating={aiGenerating}
           aiStatus={aiStatus}
-          aiMessage={aiMessage}
+          aiMessageIndex={aiMessageIndex}
           stopAiGeneration={stopAiGeneration}
         />
       </Modal>
