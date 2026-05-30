@@ -31,7 +31,7 @@ public sealed class CreateBlankQuizCommandHandler : IRequestHandler<CreateBlankQ
 
         var quiz = new Quiz
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             UserId = command.UserId,
             Name = command.Name,
             Description = command.Description,

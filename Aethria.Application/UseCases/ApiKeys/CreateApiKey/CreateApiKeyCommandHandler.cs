@@ -28,7 +28,7 @@ public sealed class CreateApiKeyCommandHandler : IRequestHandler<CreateApiKeyCom
 
         var now = DateTimeOffset.UtcNow;
         var expiresAt = now.AddDays(command.ExpirationDays);
-        var keyId = Guid.NewGuid();
+        var keyId = Guid.CreateVersion7();
 
         var tokenResult = _apiKeyTokenService.GenerateToken(command.UserId, command.Email, keyId, expiresAt);
 

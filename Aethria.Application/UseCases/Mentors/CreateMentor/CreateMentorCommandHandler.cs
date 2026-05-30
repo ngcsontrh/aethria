@@ -29,7 +29,7 @@ public sealed class CreateMentorCommandHandler : IRequestHandler<CreateMentorCom
 
         var mentor = new Mentor
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             UserId = command.UserId,
             Name = command.Name,
             Description = command.Description,

@@ -34,7 +34,7 @@ public sealed class AIQuizGenerationCompletedEventHandler : INotificationHandler
         var now = DateTimeOffset.UtcNow;
         var userNotification = new Notification
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             UserId = notification.UserId,
             Type = NotificationType.QuizGenerated.Value,
             Data = new Dictionary<string, string>

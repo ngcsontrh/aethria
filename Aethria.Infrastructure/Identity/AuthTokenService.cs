@@ -47,7 +47,7 @@ internal sealed class AuthTokenService : IAuthTokenService
     {
         var now = DateTimeOffset.UtcNow;
         var expiresAt = now.AddDays(_options.RefreshTokenDays);
-        var tokenId = Guid.NewGuid();
+        var tokenId = Guid.CreateVersion7();
         var randomBytes = RandomNumberGenerator.GetBytes(32);
         var refreshToken = string.Join(
             '.',

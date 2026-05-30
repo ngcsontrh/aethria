@@ -85,7 +85,7 @@ public sealed class GenerateAIRoadmapCommandHandler : IRequestHandler<GenerateAI
             return Result.Fail<Guid>(new InternalError(message));
         }
 
-        var roadmapId = Guid.NewGuid();
+        var roadmapId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
         var roadmap = new Roadmap
         {

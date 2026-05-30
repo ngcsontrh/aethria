@@ -48,7 +48,7 @@ public sealed class GeneralChatCommandHandler : IStreamRequestHandler<GeneralCha
         }
         else
         {
-            sessionId = Guid.NewGuid();
+            sessionId = Guid.CreateVersion7();
             sessionMessages = [];
         }
 
@@ -153,7 +153,7 @@ public sealed class GeneralChatCommandHandler : IStreamRequestHandler<GeneralCha
         {
             new()
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 SessionId = session.Id,
                 Role = ChatRole.User,
                 Content = userMessage,
@@ -169,7 +169,7 @@ public sealed class GeneralChatCommandHandler : IStreamRequestHandler<GeneralCha
             var messageTimestamp = baseTimestamp.AddMilliseconds(messageOffsetMilliseconds);
             newDomainSessionMessages.Add(new ChatMessage
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 SessionId = session.Id,
                 Role = ChatRole.FromValue(msg.Role),
                 Content = msg.Content,

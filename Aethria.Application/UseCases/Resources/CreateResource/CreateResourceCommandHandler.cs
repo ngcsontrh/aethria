@@ -90,7 +90,7 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
             command.ContentType,
             cancellationToken);
 
-        var resourceId = Guid.NewGuid();
+        var resourceId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
         var resource = new Resource
         {
@@ -110,7 +110,7 @@ public sealed class CreateResourceCommandHandler : IRequestHandler<CreateResourc
         for (var i = 0; i < chunks.Count; i++)
         {
             resourceChunks.Add(new ResourceChunkVectorInput(
-                Id: Guid.NewGuid(),
+                Id: Guid.CreateVersion7(),
                 ResourceId: resource.Id,
                 ChunkIndex: i,
                 Content: chunks[i].Content,

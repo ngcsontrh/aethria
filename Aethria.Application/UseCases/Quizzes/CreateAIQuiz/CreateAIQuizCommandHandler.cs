@@ -97,7 +97,7 @@ public sealed class CreateAIQuizCommandHandler : IRequestHandler<CreateAIQuizCom
             return Result.Fail<Guid>(new InternalError(message));
         }
 
-        var quizId = Guid.NewGuid();
+        var quizId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
         var questions = new List<QuizQuestion>();
 
@@ -106,7 +106,7 @@ public sealed class CreateAIQuizCommandHandler : IRequestHandler<CreateAIQuizCom
             var generated = completedResult.Questions[i];
             var question = new QuizQuestion
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 Text = generated.QuestionText,
                 Explanation = generated.Explanation,
                 OrderIndex = i,
@@ -119,7 +119,7 @@ public sealed class CreateAIQuizCommandHandler : IRequestHandler<CreateAIQuizCom
             {
                 question.Options.Add(new QuestionOption
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     QuizQuestionId = question.Id,
                     Text = generated.Options[j],
                     OrderIndex = j,
@@ -159,7 +159,7 @@ public sealed class CreateAIQuizCommandHandler : IRequestHandler<CreateAIQuizCom
 
         var version = new QuizVersion
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             QuizId = quiz.Id,
             VersionNumber = 1,
             QuestionSnapshots = [],
@@ -171,7 +171,7 @@ public sealed class CreateAIQuizCommandHandler : IRequestHandler<CreateAIQuizCom
         {
             var snapshot = new QuestionSnapshot
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 QuizVersionId = version.Id,
                 OriginalQuestionId = question.Id,
                 Text = question.Text,
@@ -187,7 +187,7 @@ public sealed class CreateAIQuizCommandHandler : IRequestHandler<CreateAIQuizCom
             {
                 snapshot.Options.Add(new QuestionOptionSnapshot
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     QuestionSnapshotId = snapshot.Id,
                     OriginalOptionId = option.Id,
                     Text = option.Text,

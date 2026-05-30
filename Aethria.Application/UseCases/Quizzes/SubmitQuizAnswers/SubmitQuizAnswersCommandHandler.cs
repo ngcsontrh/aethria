@@ -108,7 +108,7 @@ public sealed class SubmitQuizAnswersCommandHandler : IRequestHandler<SubmitQuiz
         var now = DateTimeOffset.UtcNow;
         var submission = new QuizSubmission
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             UserId = command.UserId,
             QuizId = command.QuizId,
             QuizVersionId = quizVersion.Id,
@@ -122,7 +122,7 @@ public sealed class SubmitQuizAnswersCommandHandler : IRequestHandler<SubmitQuiz
                 var questionSnapshot = questionSnapshots.First(qs => qs.Id == a.QuestionSnapshotId);
                 return new SubmissionAnswer
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     QuestionSnapshotId = a.QuestionSnapshotId,
                     SelectedOptionId = a.SelectedOptionId,
                     IsCorrect = a.SelectedOptionId == questionSnapshot.CorrectOptionId,

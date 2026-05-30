@@ -54,7 +54,7 @@ public sealed class UpdateQuizCommandHandler : IRequestHandler<UpdateQuizCommand
             {
                 var question = new QuizQuestion
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     QuizId = quiz.Id,
                     Text = questionItem.Text,
                     Explanation = questionItem.Explanation,
@@ -68,7 +68,7 @@ public sealed class UpdateQuizCommandHandler : IRequestHandler<UpdateQuizCommand
                 {
                     question.Options.Add(new QuestionOption
                     {
-                        Id = Guid.NewGuid(),
+                        Id = Guid.CreateVersion7(),
                         QuizQuestionId = question.Id,
                         Text = optionItem.Text,
                         OrderIndex = optionItem.OrderIndex,
@@ -84,14 +84,14 @@ public sealed class UpdateQuizCommandHandler : IRequestHandler<UpdateQuizCommand
             }
 
             var newVersionNumber = quiz.CurrentVersionNumber + 1;
-            var newVersionId = Guid.NewGuid();
+            var newVersionId = Guid.CreateVersion7();
 
             var questionSnapshots = new List<QuestionSnapshot>();
             foreach (var q in newQuestions)
             {
                 var snapshot = new QuestionSnapshot
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     QuizVersionId = newVersionId,
                     OriginalQuestionId = q.Id,
                     Text = q.Text,
@@ -106,7 +106,7 @@ public sealed class UpdateQuizCommandHandler : IRequestHandler<UpdateQuizCommand
                 {
                     snapshot.Options.Add(new QuestionOptionSnapshot
                     {
-                        Id = Guid.NewGuid(),
+                        Id = Guid.CreateVersion7(),
                         QuestionSnapshotId = snapshot.Id,
                         OriginalOptionId = option.Id,
                         Text = option.Text,

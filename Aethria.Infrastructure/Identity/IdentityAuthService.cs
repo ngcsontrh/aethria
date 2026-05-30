@@ -34,7 +34,7 @@ internal sealed class IdentityAuthService : IIdentityAuthService
         var now = DateTimeOffset.UtcNow;
         var user = new AppUser
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             UserName = email,
             Email = email,
             EmailConfirmed = emailConfirmed,
