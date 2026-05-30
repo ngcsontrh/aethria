@@ -12,7 +12,7 @@ public interface IQuizRepository
 
     Task<Quiz?> GetByIdWithQuestionsAndVersionsAsync(Guid id, CancellationToken cancellationToken);
 
-    Task DeleteAsync(Quiz quiz, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task DeleteQuestionsByQuizIdAsync(Guid quizId, CancellationToken cancellationToken);
     Task DeleteSubmissionsByQuizIdAsync(Guid quizId, CancellationToken cancellationToken);
 

@@ -32,7 +32,7 @@ public sealed class DeleteQuizCommandHandler : IRequestHandler<DeleteQuizCommand
         await _unitOfWork.ExecuteInTransactionAsync(async ct =>
         {
             await _quizRepository.DeleteSubmissionsByQuizIdAsync(quiz.Id, ct);
-            await _quizRepository.DeleteAsync(quiz, ct);
+            await _quizRepository.DeleteAsync(quiz.Id, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }, cancellationToken);
 

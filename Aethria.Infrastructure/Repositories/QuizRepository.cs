@@ -77,10 +77,13 @@ internal class QuizRepository : IQuizRepository
             .FirstOrDefaultAsync(q => q.Id == id, cancellationToken);
     }
 
-    public Task DeleteAsync(Quiz quiz, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        _dbContext.Quizzes.Remove(quiz);
-        return Task.CompletedTask;
+        var quiz = await _dbContext.Quizzes.FindAsync([id], cancellationToken);
+        if (quiz != null)
+        {
+            _dbContext.Quizzes.Remove(quiz);
+        }
     }
 
     public async Task DeleteQuestionsByQuizIdAsync(Guid quizId, CancellationToken cancellationToken)
