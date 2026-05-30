@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import mermaid from "mermaid";
 
 interface MermaidProps {
   chart: string;
@@ -18,38 +17,45 @@ export const Mermaid: React.FC<MermaidProps> = ({ chart }) => {
       document.documentElement.getAttribute("data-mantine-color-scheme") ===
       "dark";
 
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: isDark ? "dark" : "default",
-      securityLevel: "loose",
-      themeVariables: {
-        background: isDark ? "#1a1b1e" : "#ffffff",
-        primaryColor: isDark ? "#25262b" : "#f8f9fa",
-        lineColor: isDark ? "#5c5f66" : "#dee2e6",
-      },
-    });
-
-    const uniqueId = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+    let cancelled = false;
 
     const renderChart = async () => {
+      const uniqueId = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+
       try {
+        const { default: mermaid } = await import("mermaid");
+        if (cancelled) return;
+
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? "dark" : "default",
+          securityLevel: "loose",
+          themeVariables: {
+            background: isDark ? "#1a1b1e" : "#ffffff",
+            primaryColor: isDark ? "#25262b" : "#f8f9fa",
+            lineColor: isDark ? "#5c5f66" : "#dee2e6",
+          },
+        });
+
         setError(null);
         const { svg: renderedSvg } = await mermaid.render(uniqueId, chart);
+        if (cancelled) return;
         setSvg(renderedSvg);
       } catch (err: unknown) {
+        if (cancelled) return;
         console.error("Mermaid render error:", err);
         const errorMessage = err instanceof Error ? err.message : String(err);
         setError(errorMessage || "Error rendering diagram");
 
-        // Remove dirty elements left over by Mermaid render failure
-        const element = document.getElementById(uniqueId);
-        if (element) {
-          element.remove();
-        }
+        document.getElementById(uniqueId)?.remove();
       }
     };
 
     renderChart();
+
+    return () => {
+      cancelled = true;
+    };
   }, [chart]);
 
   if (error) {
