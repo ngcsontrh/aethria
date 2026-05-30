@@ -41,10 +41,19 @@ public class DeleteResourceCommandHandler : IRequestHandler<DeleteResourceComman
         await _unitOfWork.ExecuteInTransactionAsync(async ct =>
         {
             await _chatSessionRepository.DeleteAllByResourceIdAsync(request.ResourceId, request.UserId, ct);
-            await _resourceChunkVectorStore.DeleteByResourceIdAsync(request.ResourceId, ct);
             await _resourceRepository.DeleteAsync(request.ResourceId, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }, cancellationToken);
+
+        try
+        {
+            await _resourceChunkVectorStore.DeleteByResourceIdAsync(request.ResourceId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete vector chunks for resource {ResourceId}", request.ResourceId);
+        }
+
         try
         {
             await _fileStorageService.DeleteFileAsync(fileUri, cancellationToken);

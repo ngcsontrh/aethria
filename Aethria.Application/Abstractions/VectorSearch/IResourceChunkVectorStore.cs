@@ -14,7 +14,6 @@ public interface IResourceChunkVectorStore
     Task<IReadOnlyList<ResourceChunkSearchResult>> GetRelevantChunksAsync(
         Guid resourceId,
         string query,
-        int topK,
         CancellationToken cancellationToken);
 }
 

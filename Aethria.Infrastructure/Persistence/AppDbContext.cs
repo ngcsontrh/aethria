@@ -24,14 +24,12 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<QuizSubmission> QuizSubmissions => Set<QuizSubmission>();
     public DbSet<SubmissionAnswer> SubmissionAnswers => Set<SubmissionAnswer>();
     public DbSet<Notification> Notifications => Set<Notification>();
-    public DbSet<ResourceChunk> ResourceChunks => Set<ResourceChunk>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.HasPostgresExtension("vector");
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }

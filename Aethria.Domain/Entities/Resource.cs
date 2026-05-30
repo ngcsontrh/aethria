@@ -9,6 +9,4 @@ public class Resource : AggregateRoot
     public string FileType { get; set; } = null!;
     public long FileSize { get; set; }
     public string? Content { get; set; }
-
-    public ICollection<ResourceChunk> Chunks { get; set; } = [];
 }

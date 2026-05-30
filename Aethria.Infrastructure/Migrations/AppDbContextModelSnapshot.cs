@@ -3,7 +3,6 @@ using System;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Pgvector;
 
 #nullable disable
 
@@ -18,8 +17,6 @@ namespace Aethria.Infrastructure.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
-
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Aethria.Domain.Entities.ApiKey", b =>
@@ -825,53 +822,6 @@ namespace Aethria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Aethria.Domain.Entities.ResourceChunk", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("ChunkIndex")
-                        .HasColumnType("integer")
-                        .HasColumnName("chunk_index");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("content");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Vector>("Embedding")
-                        .HasColumnType("vector(1536)")
-                        .HasColumnName("embedding");
-
-                    b.Property<Guid>("ResourceId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("resource_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_resource_chunks");
-
-                    b.HasIndex("Embedding")
-                        .HasDatabaseName("ix_resource_chunks_embedding");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Embedding"), "hnsw");
-                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Embedding"), new[] { "vector_cosine_ops" });
-
-                    b.HasIndex("ResourceId")
-                        .HasDatabaseName("ix_resource_chunks_resource_id");
-
-                    b.ToTable("resource_chunks", (string)null);
-                });
-
             modelBuilder.Entity("Aethria.Domain.Entities.Roadmap", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1156,16 +1106,6 @@ namespace Aethria.Infrastructure.Migrations
                         .HasConstraintName("fk_quiz_versions_quizzes_quiz_id");
                 });
 
-            modelBuilder.Entity("Aethria.Domain.Entities.ResourceChunk", b =>
-                {
-                    b.HasOne("Aethria.Domain.Entities.Resource", null)
-                        .WithMany("Chunks")
-                        .HasForeignKey("ResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_resource_chunks_resources_resource_id");
-                });
-
             modelBuilder.Entity("Aethria.Domain.Entities.SubmissionAnswer", b =>
                 {
                     b.HasOne("Aethria.Domain.Entities.QuizSubmission", null)
@@ -1263,11 +1203,6 @@ namespace Aethria.Infrastructure.Migrations
             modelBuilder.Entity("Aethria.Domain.Entities.QuizVersion", b =>
                 {
                     b.Navigation("QuestionSnapshots");
-                });
-
-            modelBuilder.Entity("Aethria.Domain.Entities.Resource", b =>
-                {
-                    b.Navigation("Chunks");
                 });
 #pragma warning restore 612, 618
         }

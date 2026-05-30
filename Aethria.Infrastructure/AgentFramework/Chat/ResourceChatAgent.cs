@@ -86,7 +86,9 @@ internal sealed class ResourceChatAgent : IChatAgent
             method: async ([Description("The search query to find relevant content in the resource. Formulate a clear, specific query based on what information you need.")] string query, CancellationToken cancellationToken) =>
             {
                 var chunks = await _resourceChunkVectorStore.GetRelevantChunksAsync(
-                    resourceId, query, topK: 5, cancellationToken);
+                    resourceId,
+                    query,
+                    cancellationToken: cancellationToken);
 
                 if (!chunks.Any())
                 {

@@ -11,8 +11,6 @@ namespace Aethria.Infrastructure.AgentFramework.Quiz.Executors;
 [SendsMessage(typeof(QuizReviewEditOutput))]
 internal partial class QuizReviewEditExecutor : Executor
 {
-    private const int RelevantChunkCount = 5;
-
     private readonly IChatClient _reviewerChatClient;
     private readonly IChatClient _editorChatClient;
     private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
@@ -72,8 +70,7 @@ internal partial class QuizReviewEditExecutor : Executor
             var chunks = await _resourceChunkVectorStore.GetRelevantChunksAsync(
                 message.ResourceId,
                 message.Questions[i].QuestionText,
-                RelevantChunkCount,
-                cancellationToken);
+                cancellationToken: cancellationToken);
 
             assignments.Add(new QuizQuestionAssignment
             {

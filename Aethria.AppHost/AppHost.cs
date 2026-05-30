@@ -13,6 +13,8 @@ var authAccessTokenMinutes = builder.AddParameter("AuthAccessTokenMinutes", secr
 var authRefreshTokenDays = builder.AddParameter("AuthRefreshTokenDays", secret: true);
 var authRefreshTokenCookieName = builder.AddParameter("AuthRefreshTokenCookieName", secret: true);
 var authGoogleClientId = builder.AddParameter("AuthGoogleClientId", secret: true);
+var qdrantEndpoint = builder.AddParameter("QdrantEndpoint", secret: true);
+var qdrantApiKey = builder.AddParameter("QdrantApiKey", secret: true);
 
 builder.AddProject<Projects.Aethria_Api>("aethria-api")
        .WithEnvironment("ConnectionStrings__DefaultConnection", defaultConnection)
@@ -27,12 +29,16 @@ builder.AddProject<Projects.Aethria_Api>("aethria-api")
        .WithEnvironment("Auth__AccessTokenMinutes", authAccessTokenMinutes)
        .WithEnvironment("Auth__RefreshTokenDays", authRefreshTokenDays)
        .WithEnvironment("Auth__RefreshTokenCookieName", authRefreshTokenCookieName)
-       .WithEnvironment("Auth__GoogleClientId", authGoogleClientId);
+       .WithEnvironment("Auth__GoogleClientId", authGoogleClientId)
+       .WithEnvironment("Qdrant__Endpoint", qdrantEndpoint)
+       .WithEnvironment("Qdrant__ApiKey", qdrantApiKey);
 
 builder.AddProject<Projects.Aethria_McpServer>("aethria-mcpserver")
        .WithEnvironment("ConnectionStrings__DefaultConnection", defaultConnection)
        .WithEnvironment("Foundry__AzureOpenAIEndpoint", foundryAzureOpenAIEndpoint)
-       .WithEnvironment("Foundry__ApiKey", foundryApiKey);
+       .WithEnvironment("Foundry__ApiKey", foundryApiKey)
+       .WithEnvironment("Qdrant__Endpoint", qdrantEndpoint)
+       .WithEnvironment("Qdrant__ApiKey", qdrantApiKey);
 
 builder.AddViteApp("aethria-web", "../aethria.web")
        .WithHttpEndpoint(port: 53174)

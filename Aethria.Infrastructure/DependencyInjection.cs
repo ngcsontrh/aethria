@@ -11,6 +11,7 @@ using Aethria.Infrastructure.Storage;
 using Aethria.Infrastructure.VectorSearch;
 using Azure.Storage.Blobs;
 using Cohere;
+using Qdrant.Client;
 using Tavily;
 
 namespace Aethria.Infrastructure;
@@ -34,7 +35,6 @@ public static class DependencyInjection
                     connectionString,
                     o =>
                     {
-                        o.UseVector();
                         o.EnableRetryOnFailure(
                             maxRetryCount: 5,
                             maxRetryDelay: TimeSpan.FromSeconds(10),
@@ -153,19 +153,28 @@ public static class DependencyInjection
                 disposeHttpClient: true);
         });
 
-        // services.AddOptions<QdrantOptions>()
-        //     .Bind(configuration.GetSection(QdrantOptions.SectionName))
-        //     .Validate(
-        //         options => !string.IsNullOrWhiteSpace(options.Endpoint),
-        //         "Qdrant:Endpoint is required.")
-        //     .Validate(
-        //         options => Uri.TryCreate(options.Endpoint, UriKind.Absolute, out _),
-        //         "Qdrant:Endpoint must be an absolute URI.")
-        //     .Validate(
-        //         options => !string.IsNullOrWhiteSpace(options.ApiKey),
-        //         "Qdrant:ApiKey is required.");
+        services.AddOptions<QdrantOptions>()
+            .Bind(configuration.GetSection(QdrantOptions.SectionName))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Endpoint),
+                "Qdrant:Endpoint is required.")
+            .Validate(
+                options => Uri.TryCreate(options.Endpoint, UriKind.Absolute, out _),
+                "Qdrant:Endpoint must be an absolute URI.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.ApiKey),
+                "Qdrant:ApiKey is required.");
 
-        services.AddScoped<IResourceChunkVectorStore, PgvectorResourceChunkVectorStore>();
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;
+            var endpoint = new Uri(options.Endpoint);
+            var useHttps = endpoint.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+
+            return new QdrantClient(endpoint.Host, https: useHttps, apiKey: options.ApiKey);
+        });
+
+        services.AddScoped<IResourceChunkVectorStore, QdrantResourceChunkVectorStore>();
 
         services.AddSingleton<ITokenCountingService, OpenAITokenCountingService>();
         services.AddSingleton<ITextChunkingService, OpenAITextChunkingService>();
@@ -207,7 +216,6 @@ public static class DependencyInjection
                     connectionString,
                     o =>
                     {
-                        o.UseVector();
                         o.EnableRetryOnFailure(
                             maxRetryCount: 5,
                             maxRetryDelay: TimeSpan.FromSeconds(10),
@@ -269,19 +277,28 @@ public static class DependencyInjection
                 disposeHttpClient: true);
         });
 
-        // services.AddOptions<QdrantOptions>()
-        //     .Bind(configuration.GetSection(QdrantOptions.SectionName))
-        //     .Validate(
-        //         options => !string.IsNullOrWhiteSpace(options.Endpoint),
-        //         "Qdrant:Endpoint is required.")
-        //     .Validate(
-        //         options => Uri.TryCreate(options.Endpoint, UriKind.Absolute, out _),
-        //         "Qdrant:Endpoint must be an absolute URI.")
-        //     .Validate(
-        //         options => !string.IsNullOrWhiteSpace(options.ApiKey),
-        //         "Qdrant:ApiKey is required.");
+        services.AddOptions<QdrantOptions>()
+            .Bind(configuration.GetSection(QdrantOptions.SectionName))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Endpoint),
+                "Qdrant:Endpoint is required.")
+            .Validate(
+                options => Uri.TryCreate(options.Endpoint, UriKind.Absolute, out _),
+                "Qdrant:Endpoint must be an absolute URI.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.ApiKey),
+                "Qdrant:ApiKey is required.");
 
-        services.AddScoped<IResourceChunkVectorStore, PgvectorResourceChunkVectorStore>();
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;
+            var endpoint = new Uri(options.Endpoint);
+            var useHttps = endpoint.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+
+            return new QdrantClient(endpoint.Host, https: useHttps, apiKey: options.ApiKey);
+        });
+
+        services.AddScoped<IResourceChunkVectorStore, QdrantResourceChunkVectorStore>();
         services.AddKeyedScoped<IChatAgent, ResourceChatAgent>("resource-chat");
 
         return services;

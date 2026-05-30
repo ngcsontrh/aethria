@@ -37,10 +37,5 @@ internal class ResourceConfiguration : IEntityTypeConfiguration<Resource>
             .IsRequired();
 
         builder.ToTable(t => t.HasCheckConstraint("ck_resources_file_size_positive", "\"file_size\" >= 0"));
-
-        builder.HasMany(x => x.Chunks)
-            .WithOne()
-            .HasForeignKey(x => x.ResourceId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }
