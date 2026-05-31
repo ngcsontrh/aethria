@@ -90,6 +90,51 @@ dotnet run --project Aethria.AppHost
 
 Configuration is supplied through the `appsettings*.json` files for database, Qdrant, Azure Storage, Azure AI Foundry/OpenAI, Cohere reranking, Tavily, and authentication settings.
 
+## Run Published Container Images
+
+The API and MCP server are published as public images on GitHub Container Registry (GHCR). No registry login is required.
+
+| Service | Image |
+| --- | --- |
+| API | `ghcr.io/ngcsontrh/aethria/aethria-api:latest` |
+| MCP server | `ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest` |
+
+Versioned images are also published from release tags. For example, pushing `api-v1.0.0` publishes `ghcr.io/ngcsontrh/aethria/aethria-api:v1.0.0`, and pushing `mcpserver-v1.0.0` publishes `ghcr.io/ngcsontrh/aethria/aethria-mcpserver:v1.0.0`.
+
+Pull the images:
+
+```bash
+docker pull ghcr.io/ngcsontrh/aethria/aethria-api:latest
+docker pull ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest
+```
+
+To run with Docker Compose, create a `docker-compose.yml` that references these images, fill the environment variables listed in the configuration tables below, then start the services:
+
+```bash
+docker compose pull aethria-api aethria-mcpserver
+docker compose up -d aethria-api aethria-mcpserver
+```
+
+To run without Compose, place the required API settings in `api.env` and the MCP server settings in `mcpserver.env`, then run:
+
+```bash
+docker run -d \
+  --name aethria-api \
+  --restart unless-stopped \
+  -p 5250:8080 \
+  --env-file api.env \
+  ghcr.io/ngcsontrh/aethria/aethria-api:latest
+
+docker run -d \
+  --name aethria-mcpserver \
+  --restart unless-stopped \
+  -p 5261:8080 \
+  --env-file mcpserver.env \
+  ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest
+```
+
+Use the environment variable names from the `Aethria.Api` and `Aethria.McpServer` tables below. At minimum, set the database, Foundry/OpenAI, Qdrant, authentication, storage, and CORS values required by the service you are starting.
+
 ### Local Configuration
 
 For local development, fill the variables in each project's `appsettings.Development.json`.
