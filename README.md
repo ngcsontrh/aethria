@@ -79,6 +79,24 @@ aethria/
 - Localized notification center for generated quizzes, roadmaps, and uploaded resources.
 - API key management for MCP access.
 
+## Contributing
+
+Contributors are welcome. If you want to improve Aethria, please open an issue for bugs, feature ideas, documentation gaps, or questions before starting large changes.
+
+Good contribution areas include:
+
+- Backend API endpoints, application use cases, validation, and persistence improvements.
+- AI learning features, resource parsing, vector search, reranking, and MCP tools.
+- Front-end UX, localization, accessibility, and React Query/TanStack Router flows.
+- Documentation, examples, local setup notes, tests, and deployment guidance.
+
+Before opening a pull request:
+
+- Keep changes focused and consistent with the existing Clean Architecture boundaries.
+- Avoid committing secrets, local credentials, generated build output, or machine-specific settings.
+- Run the relevant local checks, such as `dotnet restore`, `dotnet build`, and front-end package/build commands when the web client is changed.
+- Describe the problem, the approach, and any verification performed in the pull request.
+
 ## Run Locally
 
 Prerequisites: .NET 10 SDK and Node.js.
