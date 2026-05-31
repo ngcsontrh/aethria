@@ -1,165 +1,200 @@
 # Aethria
 
-Aethria is an AI-assisted learning platform for managing resources, mentors, quizzes, roadmaps, and chat-based guidance.
+<p>
+  <img src="aethria.web/src/assets/logo-icon.png" alt="Aethria logo" width="72" />
+</p>
+
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![Aspire](https://img.shields.io/badge/Aspire-Orchestration-512BD4?logo=dotnet&logoColor=white)](https://aspire.dev/)
+[![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Qdrant](https://img.shields.io/badge/Qdrant-Vector_Search-DC244C?logo=qdrant&logoColor=white)](https://qdrant.tech/)
+[![Azure](https://img.shields.io/badge/Azure-Cloud-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/)
+[![MCP](https://img.shields.io/badge/MCP-Server-111827)](https://modelcontextprotocol.io/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
+Aethria is an AI-assisted learning platform for managing learning resources, mentors, quizzes, roadmaps, notifications, and chat-based guidance.
+
+The solution uses Clean Architecture on .NET 10, .NET Aspire for local orchestration, and a React 19 + TypeScript SPA for the user interface.
+
+## Contents
+
+- [Highlights](#highlights)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Run Locally](#run-locally)
+- [Configuration](#configuration)
+- [Published Images](#published-images)
+- [Contributing](#contributing)
+
+## Highlights
+
+| Area | Capabilities |
+| --- | --- |
+| Authentication | Email/password login, Google sign-in, JWT access tokens, refresh-token cookies, and password changes. |
+| Resources | Upload learning files, parse and chunk content, store files in Azure Blob Storage, search with Qdrant vectors, rerank with Cohere, and chat with uploaded resources. |
+| Mentors | Create validated mentor profiles and chat with mentor-specific agents. |
+| Roadmaps | Generate AI learning roadmaps with streaming updates and notification events. |
+| Quizzes | Create blank quizzes, generate AI quizzes, submit attempts, view history, and review submissions. |
+| Realtime UX | SignalR-powered chat and notification flows. |
+| MCP | Protected Model Context Protocol server for external AI clients using API-key authentication. |
+
+## Tech Stack
+
+| Layer | Main tools |
+| --- | --- |
+| Backend | .NET 10, ASP.NET Core Minimal APIs, SignalR, DispatchR, FluentValidation |
+| Data | Entity Framework Core, PostgreSQL, ASP.NET Identity |
+| AI and search | Azure AI Foundry / Azure OpenAI, Qdrant, Cohere reranking, Tavily |
+| Storage | Azure Blob Storage |
+| Orchestration | .NET Aspire |
+| Frontend | React 19, TypeScript, Vite, Mantine, TanStack Router, React Query, i18next |
+| Integration | Model Context Protocol server |
 
 ## Architecture
 
-The solution follows a Clean Architecture style on .NET 10, with .NET Aspire orchestrating the API, MCP server, and web client.
+```text
+User browser
+   |
+   v
+aethria.web  ---- REST / SignalR ---->  Aethria.Api
+   |
+   v
+Aethria.Application
+   |
+   v
+Aethria.Infrastructure
+   |
+   v
+Aethria.Domain
 
-- `Aethria.Domain`: core entities, value objects, notifications, events, and repository contracts.
-- `Aethria.Application`: DispatchR use cases, validation pipelines, storage/vector search abstractions, and API/MCP-specific service registration.
-- `Aethria.Infrastructure`: EF Core persistence, Identity, Azure Blob Storage, embeddings, chunking, Qdrant vector search, AI reranking, AI agent integrations, and feature-scoped service registration.
-- `Aethria.Api`: REST endpoints for app features, notifications, SignalR hubs, JWT authentication, OpenAPI, Scalar UI, and full API service composition.
-- `Aethria.McpServer`: protected Model Context Protocol server with minimal resource-chat service composition for AI agents.
-- `Aethria.AppHost`: .NET Aspire host for local distributed orchestration.
-- `Aethria.ServiceDefaults`: shared configurations for telemetry, resilience, and service discovery.
-- `aethria.web`: React 19 + TypeScript + Vite SPA using Mantine, TanStack Router, React Query, SignalR, and i18next.
+Aethria.McpServer
+   |
+   +--> Aethria.Application / Aethria.Infrastructure
+
+Aethria.AppHost
+   |
+   +--> Local Aspire orchestration for API, MCP server, and web client
+```
+
+| Project | Responsibility |
+| --- | --- |
+| `Aethria.Domain` | Core entities, value objects, domain events, and repository contracts. |
+| `Aethria.Application` | DispatchR use cases, validation pipelines, service abstractions, and API/MCP service registration. |
+| `Aethria.Infrastructure` | EF Core persistence, Identity, Azure Blob Storage, embeddings, chunking, Qdrant vector search, AI reranking, AI agents, and feature registrations. |
+| `Aethria.Api` | REST endpoints, SignalR hubs, JWT authentication, OpenAPI, Scalar UI, and full API composition. |
+| `Aethria.McpServer` | Protected MCP server with resource-chat tools for AI clients. |
+| `Aethria.AppHost` | .NET Aspire host for local distributed orchestration. |
+| `Aethria.ServiceDefaults` | Shared telemetry, resilience, service discovery, and health-check configuration. |
+| `aethria.web` | React SPA using Mantine, TanStack Router, React Query, SignalR, and i18next. |
 
 ## Project Structure
 
 ```text
 aethria/
-├── Aethria.AppHost/             # .NET Aspire host for local distributed orchestration
-│   ├── AppHost.cs               # Service orchestration setup
-│   └── appsettings.json         # Local configuration / resources
-├── Aethria.Api/                 # REST endpoints, SignalR hubs, JWT authentication, and Scalar UI
-│   ├── Authentication/          # User authentication endpoints & configurations
-│   ├── Endpoints/               # API endpoints grouped by domain feature
-│   ├── Hubs/                    # SignalR hub for real-time notifications
-│   └── Program.cs               # API entry point using AddApi* service registrations
-├── Aethria.McpServer/           # Protected Model Context Protocol (MCP) server for AI integrations
-│   ├── Authentication/          # API key validation for AI clients
-│   ├── Tools/                   # Tools exposed to Model Context Protocol clients
-│   └── Program.cs               # MCP entry point using AddMcp* minimal registrations
-├── Aethria.Domain/              # Core domain layers (Entities, Events, Repositories contracts)
-│   ├── Common/                  # Shared domain base classes
-│   ├── Entities/                # Enterprise/domain logic models (User, Resource, Mentor, Quiz, Roadmap, Notification)
-│   ├── Events/                  # Domain events (e.g. ResourceUploadedEvent)
-│   ├── Repositories/            # Interfaces defining persistence operations
-│   └── ValueObjects/            # Domain value objects and typed constants
-├── Aethria.Application/         # DispatchR handlers, validation, use cases, and interfaces
-│   ├── Abstractions/            # Interfaces for external dependencies (Storage, Embeddings, Vector Search)
-│   ├── Behaviors/               # DispatchR validation pipeline behaviors
-│   ├── Utils/                   # Shared parsing and text sanitization helpers
-│   ├── DependencyInjection.cs   # AddApiApplicationServices and AddMcpApplicationServices
-│   └── UseCases/                # Commands/queries, stream requests, notifications, and handlers
-├── Aethria.Infrastructure/      # Database persistence, Blob Storage, AI agent integrations
-│   ├── AgentFramework/          # Orchestrators and tools for LLM interactions
-│   ├── Chunking/                # PDF/TXT document parsing and chunking policies
-│   ├── Configuration/           # Options bound from host configuration
-│   ├── DomainEvents/            # DispatchR domain event dispatcher
-│   ├── Embedding/               # Semantic vectors generation implementations
-│   ├── Identity/                # ASP.NET Identity and token services
-│   ├── Repositories/            # EF Core repository implementations
-│   ├── Persistence/             # Entity Framework Core DbContext configurations
-│   ├── Storage/                 # File uploads to Azure Blob Storage
-│   ├── UnitOfWork/              # Unit of work and transaction coordination
-│   ├── VectorSearch/            # Qdrant resource search and Cohere reranking
-│   └── DependencyInjection.cs   # AddApiInfrastructureServices and AddMcpInfrastructureServices
-├── Aethria.ServiceDefaults/     # Shared resiliency, service discovery, telemetry, and health check config
-│   └── Extensions.cs            # Custom IHostApplicationBuilder setups
-└── aethria.web/                 # Front-end SPA: React 19 + TypeScript + Vite + Mantine
-    ├── public/                  # Static assets and translations
-    └── src/
-        ├── components/          # Reusable UI components
-        ├── i18n/                # Localization / Internationalization (i18next)
-        ├── pages/               # Routing pages & views
-        ├── services/            # API clients, React Query queries, and SignalR hooks
-        ├── main.tsx             # React mount entrypoint
-        └── router.tsx           # TanStack Router configuration
+├── Aethria.AppHost/             # .NET Aspire local orchestration
+│   ├── AppHost.cs
+│   └── appsettings.json
+├── Aethria.Api/                 # REST API, SignalR, auth, OpenAPI, Scalar UI
+│   ├── Authentication/
+│   ├── Endpoints/
+│   ├── Hubs/
+│   └── Program.cs
+├── Aethria.McpServer/           # Protected MCP server for AI integrations
+│   ├── Authentication/
+│   ├── Tools/
+│   └── Program.cs
+├── Aethria.Domain/              # Entities, events, repository contracts, value objects
+│   ├── Common/
+│   ├── Entities/
+│   ├── Events/
+│   ├── Repositories/
+│   └── ValueObjects/
+├── Aethria.Application/         # Use cases, validation, abstractions
+│   ├── Abstractions/
+│   ├── Behaviors/
+│   ├── UseCases/
+│   └── DependencyInjection.cs
+├── Aethria.Infrastructure/      # Persistence, storage, AI, vector search
+│   ├── AgentFramework/
+│   ├── Chunking/
+│   ├── Configuration/
+│   ├── Identity/
+│   ├── Persistence/
+│   ├── Repositories/
+│   ├── Storage/
+│   ├── VectorSearch/
+│   └── DependencyInjection.cs
+├── Aethria.ServiceDefaults/     # Shared service defaults
+├── aethria.web/                 # React + TypeScript + Vite SPA
+│   ├── public/
+│   └── src/
+│       ├── components/
+│       ├── i18n/
+│       ├── pages/
+│       ├── services/
+│       ├── main.tsx
+│       └── router.tsx
+└── docker-compose.yml
 ```
-
-## Main Capabilities
-
-- Email and Google authentication with refresh tokens.
-- Resource upload, parsing, chunking, storage, Qdrant vector search, Cohere reranking, and resource chat.
-- Mentor creation, validation, and mentor chat.
-- AI-generated learning roadmaps with streaming updates.
-- Quiz creation, AI quiz generation, attempts, submission history, and review.
-- Localized notification center for generated quizzes, roadmaps, and uploaded resources.
-- API key management for MCP access.
-
-## Contributing
-
-Contributors are welcome. If you want to improve Aethria, please open an issue for bugs, feature ideas, documentation gaps, or questions before starting large changes.
-
-Good contribution areas include:
-
-- Backend API endpoints, application use cases, validation, and persistence improvements.
-- AI learning features, resource parsing, vector search, reranking, and MCP tools.
-- Front-end UX, localization, accessibility, and React Query/TanStack Router flows.
-- Documentation, examples, local setup notes, tests, and deployment guidance.
-
-Before opening a pull request:
-
-- Keep changes focused and consistent with the existing Clean Architecture boundaries.
-- Avoid committing secrets, local credentials, generated build output, or machine-specific settings.
-- Run the relevant local checks, such as `dotnet restore`, `dotnet build`, and front-end package/build commands when the web client is changed.
-- Describe the problem, the approach, and any verification performed in the pull request.
 
 ## Run Locally
 
-Prerequisites: .NET 10 SDK and Node.js.
+### Prerequisites
+
+- .NET 10 SDK
+- Node.js
+- PostgreSQL database
+- Qdrant instance
+- Azure Blob Storage account
+- Azure AI Foundry / Azure OpenAI access
+- Tavily key for chat agents that can search the web
+
+### Recommended: Aspire
+
+Fill `Aethria.AppHost/appsettings.Development.json`, then run:
 
 ```bash
 dotnet restore
 dotnet run --project Aethria.AppHost
 ```
 
-Configuration is supplied through the `appsettings*.json` files for database, Qdrant, Azure Storage, Azure AI Foundry/OpenAI, Cohere reranking, Tavily, and authentication settings.
+`Aethria.AppHost` reads the Aspire parameters and passes them to the services it starts.
 
-## Run Published Container Images
+### API only
 
-The API and MCP server are published as public images on GitHub Container Registry (GHCR). No registry login is required.
-
-| Service | Image |
-| --- | --- |
-| API | `ghcr.io/ngcsontrh/aethria/aethria-api:latest` |
-| MCP server | `ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest` |
-
-Versioned images are also published from release tags. For example, pushing `api-v1.0.0` publishes `ghcr.io/ngcsontrh/aethria/aethria-api:v1.0.0`, and pushing `mcpserver-v1.0.0` publishes `ghcr.io/ngcsontrh/aethria/aethria-mcpserver:v1.0.0`.
-
-Pull the images:
+Fill `Aethria.Api/appsettings.Development.json`, then run:
 
 ```bash
-docker pull ghcr.io/ngcsontrh/aethria/aethria-api:latest
-docker pull ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest
+dotnet run --project Aethria.Api
 ```
 
-To run with Docker Compose, create a `docker-compose.yml` that references these images, fill the environment variables listed in the configuration tables below, then start the services:
+### MCP server only
+
+Fill `Aethria.McpServer/appsettings.Development.json`, then run:
 
 ```bash
-docker compose pull aethria-api aethria-mcpserver
-docker compose up -d aethria-api aethria-mcpserver
+dotnet run --project Aethria.McpServer
 ```
 
-To run without Compose, place the required API settings in `api.env` and the MCP server settings in `mcpserver.env`, then run:
+### Web client only
 
 ```bash
-docker run -d \
-  --name aethria-api \
-  --restart unless-stopped \
-  -p 5250:8080 \
-  --env-file api.env \
-  ghcr.io/ngcsontrh/aethria/aethria-api:latest
-
-docker run -d \
-  --name aethria-mcpserver \
-  --restart unless-stopped \
-  -p 5261:8080 \
-  --env-file mcpserver.env \
-  ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest
+cd aethria.web
+npm install
+npm run dev
 ```
 
-Use the environment variable names from the `Aethria.Api` and `Aethria.McpServer` tables below. At minimum, set the database, Foundry/OpenAI, Qdrant, authentication, storage, and CORS values required by the service you are starting.
+If the Vite origin is different from the API CORS configuration, add it to `Cors` in `Aethria.Api/appsettings.Development.json`.
 
-### Local Configuration
+## Configuration
 
-For local development, fill the variables in each project's `appsettings.Development.json`.
+Keep local secrets in `appsettings.Development.json`, user secrets, or `.env` files that are not committed. Do not place real connection strings or API keys in README examples.
 
-#### Aethria.AppHost
+### AppHost parameters
 
-`Aethria.AppHost` is the recommended local entry point. Fill `Aethria.AppHost/appsettings.Development.json` under `Parameters`. AppHost reads these Aspire parameters and passes them to the services it starts.
+`Aethria.AppHost/appsettings.Development.json`:
 
 ```json
 {
@@ -183,9 +218,9 @@ For local development, fill the variables in each project's `appsettings.Develop
 }
 ```
 
-#### Aethria.Api
+### API appsettings
 
-When running the API directly with `dotnet run --project Aethria.Api`, fill `Aethria.Api/appsettings.Development.json`.
+`Aethria.Api/appsettings.Development.json`:
 
 ```json
 {
@@ -219,7 +254,7 @@ When running the API directly with `dotnet run --project Aethria.Api`, fill `Aet
 }
 ```
 
-Equivalent environment variables for `Aethria.Api`:
+### API environment variables
 
 | Environment variable | Required | Value |
 | --- | --- | --- |
@@ -244,11 +279,9 @@ Equivalent environment variables for `Aethria.Api`:
 | `Cors__0__AllowCredentials` | Optional | Set to `true` when the browser must send refresh-token cookies. |
 | `ASPNETCORE_ENVIRONMENT` | Optional | Set to `Development` for local development. |
 
-If the web client runs on a different local origin, add it to `Cors` in `Aethria.Api/appsettings.Development.json`.
+### MCP server appsettings
 
-#### Aethria.McpServer
-
-When running the MCP server directly with `dotnet run --project Aethria.McpServer`, fill `Aethria.McpServer/appsettings.Development.json`.
+`Aethria.McpServer/appsettings.Development.json`:
 
 ```json
 {
@@ -267,7 +300,7 @@ When running the MCP server directly with `dotnet run --project Aethria.McpServe
 }
 ```
 
-Equivalent environment variables for `Aethria.McpServer`:
+### MCP server environment variables
 
 | Environment variable | Required | Value |
 | --- | --- | --- |
@@ -279,9 +312,9 @@ Equivalent environment variables for `Aethria.McpServer`:
 | `Qdrant__ApiKey` | Yes | Qdrant API key. |
 | `ASPNETCORE_ENVIRONMENT` | Optional | Set to `Development` for local development. |
 
-The MCP server uses the same database as the API for API key authentication. Create an API key through `Aethria.Api`, then call the MCP endpoint with the `X-Api-Key` header.
+The MCP server uses the same database as the API for API-key authentication. Create an API key through `Aethria.Api`, then call the MCP endpoint with the `X-Api-Key` header.
 
-#### Variable Meanings
+### Variable reference
 
 | AppHost parameter / appsettings key / environment variable | Used by | Meaning |
 | --- | --- | --- |
@@ -302,4 +335,68 @@ The MCP server uses the same database as the API for API key authentication. Cre
 | `AuthGoogleClientId` / `Auth:GoogleClientId` / `Auth__GoogleClientId` | AppHost, API | Google OAuth client ID used to validate Google sign-in tokens. |
 | `Cors` | API | Allowed local web origins. Keep `http://localhost:53174` when using the Aspire-hosted Vite app, or add your own web client origin. |
 
+## Published Images
 
+The API and MCP server are published as public images on GitHub Container Registry. No registry login is required.
+
+| Service | Image |
+| --- | --- |
+| API | `ghcr.io/ngcsontrh/aethria/aethria-api:latest` |
+| MCP server | `ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest` |
+
+Versioned images are also published from release tags:
+
+- `api-v1.0.0` publishes `ghcr.io/ngcsontrh/aethria/aethria-api:v1.0.0`
+- `mcpserver-v1.0.0` publishes `ghcr.io/ngcsontrh/aethria/aethria-mcpserver:v1.0.0`
+
+Pull the images:
+
+```bash
+docker pull ghcr.io/ngcsontrh/aethria/aethria-api:latest
+docker pull ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest
+```
+
+Run with Compose after filling environment values in your local Compose file or `env_file` entries:
+
+```bash
+docker compose pull aethria-api aethria-mcpserver
+docker compose up -d aethria-api aethria-mcpserver
+```
+
+Run without Compose:
+
+```bash
+docker run -d \
+  --name aethria-api \
+  --restart unless-stopped \
+  -p 5250:8080 \
+  --env-file api.env \
+  ghcr.io/ngcsontrh/aethria/aethria-api:latest
+
+docker run -d \
+  --name aethria-mcpserver \
+  --restart unless-stopped \
+  -p 5261:8080 \
+  --env-file mcpserver.env \
+  ghcr.io/ngcsontrh/aethria/aethria-mcpserver:latest
+```
+
+Use the environment variable names from the API and MCP server tables above. At minimum, configure the database, Foundry/OpenAI, Qdrant, authentication, storage, and CORS values required by the service you are starting.
+
+## Contributing
+
+Contributions are welcome. Please open an issue for bugs, feature ideas, documentation gaps, or questions before starting large changes.
+
+Good areas to improve:
+
+- Backend API endpoints, application use cases, validation, and persistence.
+- AI learning features, resource parsing, vector search, reranking, and MCP tools.
+- Frontend UX, localization, accessibility, and React Query/TanStack Router flows.
+- Documentation, examples, local setup notes, tests, and deployment guidance.
+
+Before opening a pull request:
+
+- Keep changes focused and consistent with the existing Clean Architecture boundaries.
+- Avoid committing secrets, local credentials, generated build output, or machine-specific settings.
+- Run relevant checks, such as `dotnet restore`, `dotnet build`, and frontend package/build commands when the web client changes.
+- Describe the problem, the approach, and the verification performed.
