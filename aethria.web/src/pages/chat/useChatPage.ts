@@ -189,7 +189,7 @@ export function useChatPage({ mode }: UseChatPageParams) {
       : chatKeys.messages(mode, targetId, "none"),
     queryFn: async ({ signal }) =>
       mapMessages(await fetchMessagesByMode(mode, targetId, activeSessionId!, signal)),
-    enabled: !!activeSessionId && canFetchSessions(mode, targetId),
+    enabled: !!activeSessionId && canFetchSessions(mode, targetId) && !streaming,
     staleTime: Infinity,
   });
 
@@ -345,6 +345,7 @@ export function useChatPage({ mode }: UseChatPageParams) {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
     setStreaming(true);
+    let assistantContent = "";
 
     try {
       let stream: AsyncGenerator<ChatStreamResponse>;
@@ -393,6 +394,7 @@ export function useChatPage({ mode }: UseChatPageParams) {
         }
 
         if (event.status === "delta" && event.delta) {
+          assistantContent += event.delta;
           setMessagesForSession(currentSessionId, (previous) =>
             previous.map((message) =>
               message.id === tempAssistantId
@@ -404,13 +406,30 @@ export function useChatPage({ mode }: UseChatPageParams) {
         }
 
         if (event.status === "completed" && event.answer) {
-          setMessagesForSession(currentSessionId, (previous) =>
-            previous.map((message) =>
-              message.id === tempAssistantId
-                ? { ...message, content: event.answer ?? message.content }
-                : message,
-            ),
-          );
+          const finalAnswer = event.answer ?? assistantContent;
+          setMessagesForSession(currentSessionId, (previous) => {
+            let replaced = false;
+            const updated = previous.map((message) => {
+              if (message.id !== tempAssistantId) return message;
+              replaced = true;
+              return { ...message, content: finalAnswer };
+            });
+
+            if (replaced) return updated;
+
+            return [
+              ...updated.filter(
+                (message) =>
+                  !(message.role === "assistant" && message.content === ""),
+              ),
+              {
+                id: `completed-assistant-${Date.now()}`,
+                role: "assistant",
+                content: finalAnswer,
+                createdAt: new Date().toISOString(),
+              },
+            ];
+          });
         }
       }
 
@@ -430,6 +449,14 @@ export function useChatPage({ mode }: UseChatPageParams) {
         );
       }
     } finally {
+      setMessagesForSession(currentSessionId, (previous) =>
+        previous.filter(
+          (message) =>
+            message.id !== tempAssistantId ||
+            message.role !== "assistant" ||
+            message.content !== "",
+        ),
+      );
       setStreaming(false);
       abortControllerRef.current = null;
       scrollToBottom();
