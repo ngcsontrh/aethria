@@ -42,6 +42,7 @@ builder.AddProject<Projects.Aethria_McpServer>("aethria-mcpserver")
 
 builder.AddViteApp("aethria-web", "../aethria.web")
        .WithHttpEndpoint(port: 53174)
+       .WithEnvironment("VITE_GOOGLE_CLIENT_ID", authGoogleClientId)
        .WithExternalHttpEndpoints();
 
 builder.Build().Run();

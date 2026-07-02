@@ -41,7 +41,7 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
             new Uri(_foundryOptions.AzureOpenAIEndPoint),
             new AzureKeyCredential(_foundryOptions.ApiKey));
 
-        var generatorAgent = azureOpenAIClient.GetChatClient("gpt-5.4-mini").AsIChatClient()
+        var generatorAgent = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient()
             .AsAIAgent(
                 name: "QuizGeneratorAgent",
                 instructions: QuizInstructions.GeneratorInstruction)
@@ -49,8 +49,8 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
             .UseOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
             .Build();
 
-        var reviewerChatClient = azureOpenAIClient.GetChatClient("gpt-5.4-mini").AsIChatClient();
-        var editorChatClient = azureOpenAIClient.GetChatClient("gpt-5.4-nano").AsIChatClient();
+        var reviewerChatClient = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient();
+        var editorChatClient = azureOpenAIClient.GetChatClient("gpt-5.4-mini").AsIChatClient();
 
         var generatorExecutor = new QuizGeneratorExecutor(generatorAgent);
         var reviewEditExecutor = new QuizReviewEditExecutor(

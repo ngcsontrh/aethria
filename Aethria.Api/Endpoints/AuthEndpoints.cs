@@ -111,7 +111,11 @@ internal static class AuthEndpoints
         CancellationToken cancellationToken)
     {
         var cookieName = GetRefreshTokenCookieName(configuration);
-        httpContext.Request.Cookies.TryGetValue(cookieName, out var refreshToken);
+        if (!httpContext.Request.Cookies.TryGetValue(cookieName, out var refreshToken)
+            || string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return Results.Unauthorized();
+        }
 
         var result = await mediator.Send(
             new RefreshAccessTokenCommand(refreshToken),

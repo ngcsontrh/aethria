@@ -47,7 +47,7 @@ internal sealed class AIRoadmapGenerationAgent : IAIRoadmapGenerationAgent
                 new Uri(_foundryOptions.AzureOpenAIEndPoint),
                 new AzureKeyCredential(_foundryOptions.ApiKey));
 
-            var agent = azureOpenAIClient.GetChatClient("gpt-5.4-mini").AsIChatClient()
+            var agent = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient()
                 .AsAIAgent(
                     name: "RoadmapGenerationAgent",
                     instructions: RoadmapGenerationInstructions.SystemPrompt)

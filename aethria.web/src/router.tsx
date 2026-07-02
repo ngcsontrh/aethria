@@ -17,7 +17,7 @@ import QuizPage from "./pages/quiz/QuizPage";
 import RoadmapPage from "./pages/roadmap/RoadmapPage";
 import ApiKeyPage from "./pages/apiKey/ApiKeyPage";
 import NotificationPage from "./pages/notification/NotificationPage";
-import { isAuthenticated } from "./services";
+import { isAuthenticated, refreshSession } from "./services";
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -31,8 +31,8 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  beforeLoad: () => {
-    if (isAuthenticated()) {
+  beforeLoad: async () => {
+    if (await refreshSession()) {
       throw redirect({ to: "/chat/general", replace: true });
     }
     throw redirect({ to: "/auth/login", replace: true });
@@ -61,8 +61,8 @@ const authenticatedRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "authenticated",
   component: () => <AppLayout />,
-  beforeLoad: () => {
-    if (!isAuthenticated()) {
+  beforeLoad: async () => {
+    if (!isAuthenticated() && !(await refreshSession())) {
       throw redirect({ to: "/auth/login", replace: true });
     }
   },

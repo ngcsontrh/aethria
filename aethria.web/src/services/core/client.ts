@@ -47,7 +47,23 @@ export function hasValidAccessToken(): boolean {
   return expiresAt - skewMs > Date.now();
 }
 
-export async function refreshAuthSession(signal?: AbortSignal): Promise<StoredAuthSession> {
+function isPublicAuthEndpoint(url?: string): boolean {
+  if (!url) {
+    return false;
+  }
+
+  return [
+    "/api/auth/register",
+    "/api/auth/login",
+    "/api/auth/google",
+    "/api/auth/refresh",
+    "/api/auth/logout",
+  ].some((endpoint) => url.endsWith(endpoint) || url === endpoint);
+}
+
+let refreshPromise: Promise<StoredAuthSession> | null = null;
+
+async function requestAuthSessionRefresh(signal?: AbortSignal): Promise<StoredAuthSession> {
   const baseURL =
     (import.meta.env.VITE_API_URL as string) || "https://localhost:7011";
 
@@ -67,6 +83,14 @@ export async function refreshAuthSession(signal?: AbortSignal): Promise<StoredAu
   };
   writeStoredSession(session);
   return session;
+}
+
+export async function refreshAuthSession(signal?: AbortSignal): Promise<StoredAuthSession> {
+  refreshPromise ??= requestAuthSessionRefresh(signal).finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
 }
 
 export const api = axios.create({
@@ -96,7 +120,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 api.interceptors.request.use(
   async (config) => {
-    if (config.url && config.url.includes("/auth/")) {
+    if (isPublicAuthEndpoint(config.url)) {
       return config;
     }
 
@@ -132,7 +156,7 @@ api.interceptors.response.use(
       originalRequest &&
       !originalRequest._retry &&
       originalRequest.url &&
-      !originalRequest.url.includes("/auth/")
+      !isPublicAuthEndpoint(originalRequest.url)
     ) {
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {
