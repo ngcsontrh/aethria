@@ -97,3 +97,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Deploy to Azure App Service
+        if: github.ref_type == 'tag'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ vars.AZURE_API_APP_SERVICE_NAME }}
+          publish-profile: ${{ secrets.AZURE_API_APP_SERVICE_PUBLISH_PROFILE }}
+          images: ${{ steps.image.outputs.name }}:latest
