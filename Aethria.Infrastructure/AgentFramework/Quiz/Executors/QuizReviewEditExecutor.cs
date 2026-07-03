@@ -11,20 +11,25 @@ namespace Aethria.Infrastructure.AgentFramework.Quiz.Executors;
 [SendsMessage(typeof(QuizReviewEditOutput))]
 internal partial class QuizReviewEditExecutor : Executor
 {
+    private static readonly TimeSpan ReviewEditDelay = TimeSpan.FromMilliseconds(500);
+
     private readonly IChatClient _reviewerChatClient;
     private readonly IChatClient _editorChatClient;
     private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
+    private readonly AgentSkillsProvider _reviewerSkillsProvider;
     private readonly bool _enableSensitiveTelemetry;
 
     public QuizReviewEditExecutor(
         IChatClient reviewerChatClient,
         IChatClient editorChatClient,
         IResourceChunkVectorStore resourceChunkVectorStore,
-        bool enableSensitiveTelemetry) : base("QuizReviewEditExecutor")
+        bool enableSensitiveTelemetry,
+        AgentSkillsProvider reviewerSkillsProvider) : base("QuizReviewEditExecutor")
     {
         _reviewerChatClient = reviewerChatClient;
         _editorChatClient = editorChatClient;
         _resourceChunkVectorStore = resourceChunkVectorStore;
+        _reviewerSkillsProvider = reviewerSkillsProvider;
         _enableSensitiveTelemetry = enableSensitiveTelemetry;
     }
 
@@ -94,19 +99,21 @@ internal partial class QuizReviewEditExecutor : Executor
         IReadOnlyList<QuizQuestionAssignment> assignments,
         CancellationToken cancellationToken)
     {
-        //var results = new List<QuizQuestionProcessResult>(assignments.Count);
+        var results = new List<QuizQuestionProcessResult>(assignments.Count);
 
-        //foreach (var assignment in assignments)
-        //{
-        //    cancellationToken.ThrowIfCancellationRequested();
-        //    results.Add(await ReviewEditQuestionAsync(assignment, cancellationToken));
-        //}
+        foreach (var assignment in assignments)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
-        //return results;
+            if (results.Count > 0)
+            {
+                await Task.Delay(ReviewEditDelay, cancellationToken);
+            }
 
-        var tasks = assignments.Select(a => ReviewEditQuestionAsync(a, cancellationToken));
-        var results = await Task.WhenAll(tasks);
-        return results.ToList();
+            results.Add(await ReviewEditQuestionAsync(assignment, cancellationToken));
+        }
+
+        return results;
     }
 
     private async Task<QuizQuestionProcessResult> ReviewEditQuestionAsync(
@@ -122,6 +129,8 @@ internal partial class QuizReviewEditExecutor : Executor
                 assignment.Question);
         }
 
+        await Task.Delay(ReviewEditDelay, cancellationToken);
+
         return await RunStructuredEditAsync(assignment, review, cancellationToken);
     }
 
@@ -129,7 +138,10 @@ internal partial class QuizReviewEditExecutor : Executor
         QuizQuestionAssignment assignment,
         CancellationToken cancellationToken)
     {
-        var agent = _reviewerChatClient
+        var reviewerBuilder = _reviewerChatClient.AsBuilder();
+        reviewerBuilder.UseAIContextProviders(_reviewerSkillsProvider);
+
+        var agent = reviewerBuilder.Build()
             .AsAIAgent(
                 name: $"QuizRagReviewerQ{assignment.QuestionNumber}",
                 instructions: QuizInstructions.ReviewerInstruction)

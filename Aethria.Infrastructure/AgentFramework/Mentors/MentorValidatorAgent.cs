@@ -5,8 +5,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 
-#pragma warning disable MAAI001
-
 namespace Aethria.Infrastructure.AgentFramework.Mentors;
 
 internal sealed class MentorValidatorAgent : IMentorValidatorAgent

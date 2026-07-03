@@ -13,6 +13,7 @@
     <PackageReference Include="DispatchR.Mediator.Abstractions" />
     <PackageReference Include="FluentResults" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>

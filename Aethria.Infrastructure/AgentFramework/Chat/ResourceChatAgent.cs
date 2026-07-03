@@ -7,8 +7,6 @@ using Microsoft.Extensions.Hosting;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-#pragma warning disable MAAI001
-
 namespace Aethria.Infrastructure.AgentFramework.Chat;
 
 internal sealed class ResourceChatAgent : IChatAgent

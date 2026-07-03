@@ -1,4 +1,5 @@
 using Aethria.Infrastructure.AgentFramework.Quiz.Executors;
+using Aethria.Infrastructure.AgentFramework.Quiz.Skills;
 using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Agents.AI;
@@ -41,7 +42,13 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
             new Uri(_foundryOptions.AzureOpenAIEndPoint),
             new AzureKeyCredential(_foundryOptions.ApiKey));
 
+        var generatorSkillsProvider = new AgentSkillsProvider(new QuizGeneratorSkill());
+        var reviewerSkillsProvider = new AgentSkillsProvider(new QuizReviewerSkill());
+
         var generatorAgent = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient()
+            .AsBuilder()
+            .UseAIContextProviders(generatorSkillsProvider)
+            .Build()
             .AsAIAgent(
                 name: "QuizGeneratorAgent",
                 instructions: QuizInstructions.GeneratorInstruction)
@@ -57,7 +64,8 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
             reviewerChatClient,
             editorChatClient,
             _resourceChunkVectorStore,
-            _enableSensitiveTelemetry);
+            _enableSensitiveTelemetry,
+            reviewerSkillsProvider);
         var finalizerExecutor = new QuizFinalizerExecutor();
 
         var workflow = new WorkflowBuilder(generatorExecutor)

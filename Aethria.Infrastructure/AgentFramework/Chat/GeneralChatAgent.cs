@@ -7,8 +7,6 @@ using Microsoft.Extensions.Hosting;
 using System.Runtime.CompilerServices;
 using Tavily;
 
-#pragma warning disable MAAI001
-
 namespace Aethria.Infrastructure.AgentFramework.Chat;
 
 internal sealed class GeneralChatAgent : IChatAgent
