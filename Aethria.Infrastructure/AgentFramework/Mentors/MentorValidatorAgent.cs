@@ -1,8 +1,8 @@
 using Azure;
 using Azure.AI.OpenAI;
+using Aethria.Infrastructure.AgentFramework;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 
 namespace Aethria.Infrastructure.AgentFramework.Mentors;
@@ -10,14 +10,10 @@ namespace Aethria.Infrastructure.AgentFramework.Mentors;
 internal sealed class MentorValidatorAgent : IMentorValidatorAgent
 {
     private readonly FoundryOptions _options;
-    private readonly bool _enableSensitiveTelemetry;
 
-    public MentorValidatorAgent(
-        IOptions<FoundryOptions> options,
-        IHostEnvironment hostEnvironment)
+    public MentorValidatorAgent(IOptions<FoundryOptions> options)
     {
         _options = options.Value;
-        _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
     public async Task<MentorInstructionValidationResult> ValidateAsync(
@@ -29,11 +25,18 @@ internal sealed class MentorValidatorAgent : IMentorValidatorAgent
             new AzureKeyCredential(_options.ApiKey));
 
         var agent = azureOpenAIClient.GetChatClient("gpt-5.4-nano").AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
+            .Build()
             .AsAIAgent(
                 name: "MentorValidatorAgent",
                 instructions: MentorInstructions.ValidatorInstruction)
             .AsBuilder()
-            .UseOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
             .Build();
 
         var validationInput = $"""

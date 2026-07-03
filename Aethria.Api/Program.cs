@@ -4,21 +4,19 @@ using Aethria.Api.Endpoints;
 using Aethria.Api.Hubs;
 using Aethria.Application;
 using Aethria.Infrastructure;
+using Aethria.Infrastructure.AgentFramework;
 using Scalar.AspNetCore;
-
-const string AgentFrameworkSourceName = "Experimental.Microsoft.Agents.AI";
-const string AgentFrameworkWorkflowsSourceName = "Microsoft.Agents.AI.Workflows";
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 builder.AddOpenTelemetrySources(
     metrics => metrics.AddMeter(
-        AgentFrameworkSourceName,
-        AgentFrameworkWorkflowsSourceName),
+        AgentFrameworkTelemetry.SourceName,
+        AgentFrameworkTelemetry.WorkflowsSourceName),
     tracing => tracing.AddSource(
-        AgentFrameworkSourceName,
-        AgentFrameworkWorkflowsSourceName));
+        AgentFrameworkTelemetry.SourceName,
+        AgentFrameworkTelemetry.WorkflowsSourceName));
 
 builder.Services.AddApiInfrastructureServices(builder.Configuration);
 builder.Services.AddApiApplicationServices();

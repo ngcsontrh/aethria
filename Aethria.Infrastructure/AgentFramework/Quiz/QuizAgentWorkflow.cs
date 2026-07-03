@@ -1,11 +1,11 @@
 using Aethria.Infrastructure.AgentFramework.Quiz.Executors;
 using Aethria.Infrastructure.AgentFramework.Quiz.Skills;
+using Aethria.Infrastructure.AgentFramework;
 using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Hosting;
 using System.Runtime.CompilerServices;
 
 namespace Aethria.Infrastructure.AgentFramework.Quiz;
@@ -14,16 +14,13 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
 {
     private readonly FoundryOptions _foundryOptions;
     private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
-    private readonly bool _enableSensitiveTelemetry;
 
     public QuizAgentWorkflow(
         IOptions<FoundryOptions> options,
-        IResourceChunkVectorStore resourceChunkVectorStore,
-        IHostEnvironment hostEnvironment)
+        IResourceChunkVectorStore resourceChunkVectorStore)
     {
         _foundryOptions = options.Value;
         _resourceChunkVectorStore = resourceChunkVectorStore;
-        _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
     public async IAsyncEnumerable<CreateAIQuizResult> RunAsync(
@@ -47,24 +44,38 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
 
         var generatorAgent = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient()
             .AsBuilder()
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
             .UseAIContextProviders(generatorSkillsProvider)
             .Build()
             .AsAIAgent(
                 name: "QuizGeneratorAgent",
                 instructions: QuizInstructions.GeneratorInstruction)
             .AsBuilder()
-            .UseOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
             .Build();
 
-        var reviewerChatClient = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient();
-        var editorChatClient = azureOpenAIClient.GetChatClient("gpt-5.4-mini").AsIChatClient();
+        var reviewerChatClient = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
+            .Build();
+        var editorChatClient = azureOpenAIClient.GetChatClient("gpt-5.4-mini").AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
+            .Build();
 
         var generatorExecutor = new QuizGeneratorExecutor(generatorAgent);
         var reviewEditExecutor = new QuizReviewEditExecutor(
             reviewerChatClient,
             editorChatClient,
             _resourceChunkVectorStore,
-            _enableSensitiveTelemetry,
             reviewerSkillsProvider);
         var finalizerExecutor = new QuizFinalizerExecutor();
 
@@ -72,7 +83,9 @@ internal sealed class QuizAgentWorkflow : IAIQuizGenerationWorkflow
             .AddEdge(generatorExecutor, reviewEditExecutor)
             .AddEdge(reviewEditExecutor, finalizerExecutor)
             .WithOutputFrom(finalizerExecutor)
-            .WithOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
+            .WithOpenTelemetry(
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData,
+                activitySource: AgentFrameworkTelemetry.WorkflowsActivitySource)
             .Build();
 
         yield return CreateAIQuizResult.Progress(CreateAIQuizResult.Statuses.GeneratingQuestions, "Generating quiz questions.");

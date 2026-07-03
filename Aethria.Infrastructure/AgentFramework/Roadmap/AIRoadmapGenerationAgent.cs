@@ -1,8 +1,8 @@
 using Azure;
 using Azure.AI.OpenAI;
+using Aethria.Infrastructure.AgentFramework;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Hosting;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -11,14 +11,10 @@ namespace Aethria.Infrastructure.AgentFramework.Roadmap;
 internal sealed class AIRoadmapGenerationAgent : IAIRoadmapGenerationAgent
 {
     private readonly FoundryOptions _foundryOptions;
-    private readonly bool _enableSensitiveTelemetry;
 
-    public AIRoadmapGenerationAgent(
-        IOptions<FoundryOptions> options,
-        IHostEnvironment hostEnvironment)
+    public AIRoadmapGenerationAgent(IOptions<FoundryOptions> options)
     {
         _foundryOptions = options.Value;
-        _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
     public async IAsyncEnumerable<GenerateAIRoadmapResult> RunAsync(
@@ -48,11 +44,18 @@ internal sealed class AIRoadmapGenerationAgent : IAIRoadmapGenerationAgent
                 new AzureKeyCredential(_foundryOptions.ApiKey));
 
             var agent = azureOpenAIClient.GetChatClient("gpt-5.4").AsIChatClient()
+                .AsBuilder()
+                .UseOpenTelemetry(
+                    sourceName: AgentFrameworkTelemetry.SourceName,
+                    configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
+                .Build()
                 .AsAIAgent(
                     name: "RoadmapGenerationAgent",
                     instructions: RoadmapGenerationInstructions.SystemPrompt)
                 .AsBuilder()
-                .UseOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
+                .UseOpenTelemetry(
+                    sourceName: AgentFrameworkTelemetry.SourceName,
+                    configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
                 .Build();
 
             response = await GenerateRoadmapAsync(agent, input.SourceContent, input.UserPrompt, cancellationToken);

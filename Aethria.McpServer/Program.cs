@@ -1,5 +1,6 @@
 using Aethria.Application;
 using Aethria.Infrastructure;
+using Aethria.Infrastructure.AgentFramework;
 using Aethria.McpServer.Tools;
 using ModelContextProtocol.AspNetCore.Authentication;
 using ModelContextProtocol.Authentication;
@@ -8,6 +9,13 @@ var builder = WebApplication.CreateBuilder(args);
 const string McpEndpointPattern = "/mcp";
 
 builder.AddServiceDefaults();
+builder.AddOpenTelemetrySources(
+    metrics => metrics.AddMeter(
+        AgentFrameworkTelemetry.SourceName,
+        AgentFrameworkTelemetry.WorkflowsSourceName),
+    tracing => tracing.AddSource(
+        AgentFrameworkTelemetry.SourceName,
+        AgentFrameworkTelemetry.WorkflowsSourceName));
 
 builder.Services.AddMcpInfrastructureServices(builder.Configuration);
 

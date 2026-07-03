@@ -1,3 +1,4 @@
+using Aethria.Infrastructure.AgentFramework;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -17,20 +18,17 @@ internal partial class QuizReviewEditExecutor : Executor
     private readonly IChatClient _editorChatClient;
     private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
     private readonly AgentSkillsProvider _reviewerSkillsProvider;
-    private readonly bool _enableSensitiveTelemetry;
 
     public QuizReviewEditExecutor(
         IChatClient reviewerChatClient,
         IChatClient editorChatClient,
         IResourceChunkVectorStore resourceChunkVectorStore,
-        bool enableSensitiveTelemetry,
         AgentSkillsProvider reviewerSkillsProvider) : base("QuizReviewEditExecutor")
     {
         _reviewerChatClient = reviewerChatClient;
         _editorChatClient = editorChatClient;
         _resourceChunkVectorStore = resourceChunkVectorStore;
         _reviewerSkillsProvider = reviewerSkillsProvider;
-        _enableSensitiveTelemetry = enableSensitiveTelemetry;
     }
 
     [MessageHandler]
@@ -146,7 +144,9 @@ internal partial class QuizReviewEditExecutor : Executor
                 name: $"QuizRagReviewerQ{assignment.QuestionNumber}",
                 instructions: QuizInstructions.ReviewerInstruction)
             .AsBuilder()
-            .UseOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
             .Build();
 
         try
@@ -205,7 +205,9 @@ internal partial class QuizReviewEditExecutor : Executor
                 name: $"QuizEditorQ{assignment.QuestionNumber}",
                 instructions: QuizInstructions.EditorInstruction)
             .AsBuilder()
-            .UseOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
             .Build();
 
         try

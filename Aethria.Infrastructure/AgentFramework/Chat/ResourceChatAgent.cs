@@ -1,9 +1,9 @@
 using Azure;
 using Azure.AI.OpenAI;
+using Aethria.Infrastructure.AgentFramework;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Compaction;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Hosting;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -13,16 +13,13 @@ internal sealed class ResourceChatAgent : IChatAgent
 {
     private readonly FoundryOptions _options;
     private readonly IResourceChunkVectorStore _resourceChunkVectorStore;
-    private readonly bool _enableSensitiveTelemetry;
 
     public ResourceChatAgent(
         IOptions<FoundryOptions> options,
-        IResourceChunkVectorStore resourceChunkVectorStore,
-        IHostEnvironment hostEnvironment)
+        IResourceChunkVectorStore resourceChunkVectorStore)
     {
         _options = options.Value;
         _resourceChunkVectorStore = resourceChunkVectorStore;
-        _enableSensitiveTelemetry = hostEnvironment.IsDevelopment();
     }
 
     public async IAsyncEnumerable<ChatAgentStreamResult> RunStreamingAsync(
@@ -65,6 +62,9 @@ internal sealed class ResourceChatAgent : IChatAgent
             new Uri(_options.AzureOpenAIEndPoint),
             new AzureKeyCredential(_options.ApiKey));
         var builder = azureOpenAIClient.GetChatClient("gpt-5.4-mini").AsIChatClient().AsBuilder();
+        builder.UseOpenTelemetry(
+            sourceName: AgentFrameworkTelemetry.SourceName,
+            configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData);
         builder.UseFunctionInvocation();
         builder.UseAIContextProviders(new CompactionProvider(CreateCompactionPipeline()));
 
@@ -74,7 +74,9 @@ internal sealed class ResourceChatAgent : IChatAgent
             tools: [searchTool]);
 
         return agent.AsBuilder()
-            .UseOpenTelemetry(configure: telemetry => telemetry.EnableSensitiveData = _enableSensitiveTelemetry)
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
             .Build();
     }
 
@@ -108,7 +110,12 @@ internal sealed class ResourceChatAgent : IChatAgent
         var azureOpenAIClient = new AzureOpenAIClient(
             new Uri(_options.AzureOpenAIEndPoint),
             new AzureKeyCredential(_options.ApiKey));
-        var summarizerClient = azureOpenAIClient.GetChatClient("gpt-4.1-nano").AsIChatClient();
+        var summarizerClient = azureOpenAIClient.GetChatClient("gpt-4.1-nano").AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(
+                sourceName: AgentFrameworkTelemetry.SourceName,
+                configure: telemetry => telemetry.EnableSensitiveData = AgentFrameworkTelemetry.EnableSensitiveData)
+            .Build();
 
         return new PipelineCompactionStrategy(
             new ToolResultCompactionStrategy(CompactionTriggers.TokensExceed(64_000)),
