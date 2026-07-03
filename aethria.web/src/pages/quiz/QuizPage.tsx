@@ -6,8 +6,13 @@ import {
   Pagination,
   Modal,
   Text,
+  Stack,
+  Divider,
+  List,
+  Alert,
 } from "@mantine/core";
-import { Plus } from "lucide-react";
+import { useState } from "react";
+import { Plus, HelpCircle, FileQuestion, History } from "lucide-react";
 import { useQuizPage } from "./useQuizPage";
 import QuizForm from "./QuizForm";
 import { QuizTable } from "./components/QuizTable";
@@ -15,6 +20,7 @@ import { AttemptModal } from "./components/AttemptModal";
 import { HistoryModal } from "./components/HistoryModal";
 
 export default function QuizPage() {
+  const [helpOpened, setHelpOpened] = useState(false);
   const {
     t,
     quizzes,
@@ -51,9 +57,18 @@ export default function QuizPage() {
     <Box p="md" style={{ overflow: "auto", flex: 1 }}>
       <Group justify="space-between" mb="md">
         <Title order={3}>{t("quiz.title")}</Title>
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
-          {t("quiz.create")}
-        </Button>
+        <Group gap="xs">
+          <Button
+            variant="light"
+            leftSection={<HelpCircle size={16} />}
+            onClick={() => setHelpOpened(true)}
+          >
+            {t("quiz.help.button")}
+          </Button>
+          <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+            {t("quiz.create")}
+          </Button>
+        </Group>
       </Group>
 
       <QuizTable
@@ -71,6 +86,53 @@ export default function QuizPage() {
           <Pagination total={totalPages} value={page} onChange={setPage} />
         </Group>
       )}
+
+      <Modal
+        opened={helpOpened}
+        onClose={() => setHelpOpened(false)}
+        title={
+          <Group gap="xs">
+            <FileQuestion size={22} color="var(--mantine-color-blue-filled)" />
+            <Text fw={700} size="lg" style={{ letterSpacing: 0 }}>
+              {t("quiz.help.title")}
+            </Text>
+          </Group>
+        }
+        size="lg"
+      >
+        <Stack gap="md">
+          <Text>{t("quiz.help.description")}</Text>
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("quiz.help.usedForTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("quiz.help.usedForItems.create")}</List.Item>
+              <List.Item>{t("quiz.help.usedForItems.generate")}</List.Item>
+              <List.Item>{t("quiz.help.usedForItems.practice")}</List.Item>
+            </List>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("quiz.help.howToTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("quiz.help.howToItems.mode")}</List.Item>
+              <List.Item>{t("quiz.help.howToItems.ai")}</List.Item>
+              <List.Item>{t("quiz.help.howToItems.attempt")}</List.Item>
+              <List.Item>{t("quiz.help.howToItems.history")}</List.Item>
+            </List>
+          </Box>
+
+          <Alert color="blue" icon={<History size={18} />}>
+            {t("quiz.help.note")}
+          </Alert>
+        </Stack>
+      </Modal>
 
       {/* Create / Edit Modal */}
       {formOpened && (

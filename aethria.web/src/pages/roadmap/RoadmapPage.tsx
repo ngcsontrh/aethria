@@ -15,14 +15,19 @@ import {
   Card,
   Center,
   Loader,
+  Divider,
+  List,
+  Alert,
 } from "@mantine/core";
-import { Plus, Trash2, Eye, Map, FileText } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2, Eye, Map, FileText, HelpCircle } from "lucide-react";
 import { useRoadmapPage } from "./useRoadmapPage";
 import RoadmapForm from "./RoadmapForm";
 import { Mermaid } from "../../components/Mermaid";
 import { marked } from "marked";
 
 export default function RoadmapPage() {
+  const [helpOpened, setHelpOpened] = useState(false);
   const {
     t,
     roadmaps,
@@ -71,9 +76,18 @@ export default function RoadmapPage() {
     <Box p="md" style={{ overflow: "auto", flex: 1 }}>
       <Group justify="space-between" mb="md">
         <Title order={3}>{t("roadmap.title")}</Title>
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
-          {t("roadmap.create")}
-        </Button>
+        <Group gap="xs">
+          <Button
+            variant="light"
+            leftSection={<HelpCircle size={16} />}
+            onClick={() => setHelpOpened(true)}
+          >
+            {t("roadmap.help.button")}
+          </Button>
+          <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+            {t("roadmap.create")}
+          </Button>
+        </Group>
       </Group>
 
       <Box pos="relative" mih={200}>
@@ -177,6 +191,53 @@ export default function RoadmapPage() {
           <Pagination total={totalPages} value={page} onChange={setPage} />
         </Group>
       )}
+
+      <Modal
+        opened={helpOpened}
+        onClose={() => setHelpOpened(false)}
+        title={
+          <Group gap="xs">
+            <Map size={22} color="var(--mantine-color-blue-filled)" />
+            <Text fw={700} size="lg" style={{ letterSpacing: 0 }}>
+              {t("roadmap.help.title")}
+            </Text>
+          </Group>
+        }
+        size="lg"
+      >
+        <Stack gap="md">
+          <Text>{t("roadmap.help.description")}</Text>
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("roadmap.help.usedForTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("roadmap.help.usedForItems.generate")}</List.Item>
+              <List.Item>{t("roadmap.help.usedForItems.organize")}</List.Item>
+              <List.Item>{t("roadmap.help.usedForItems.review")}</List.Item>
+            </List>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("roadmap.help.howToTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("roadmap.help.howToItems.resource")}</List.Item>
+              <List.Item>{t("roadmap.help.howToItems.prompt")}</List.Item>
+              <List.Item>{t("roadmap.help.howToItems.generate")}</List.Item>
+              <List.Item>{t("roadmap.help.howToItems.open")}</List.Item>
+            </List>
+          </Box>
+
+          <Alert color="blue" icon={<FileText size={18} />}>
+            {t("roadmap.help.note")}
+          </Alert>
+        </Stack>
+      </Modal>
 
       {/* AI Generate Modal */}
       <Modal

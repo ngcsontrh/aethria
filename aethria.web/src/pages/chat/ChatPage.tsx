@@ -23,6 +23,8 @@ import {
   Title,
   ThemeIcon,
   CopyButton,
+  List,
+  Alert,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import {
@@ -42,6 +44,8 @@ import {
   PanelLeftOpen,
   Copy,
   Check,
+  HelpCircle,
+  History,
 } from "lucide-react";
 import type { ChatMode } from "./useChatPage";
 import { useChatPage } from "./useChatPage";
@@ -62,6 +66,7 @@ const getToolIcon = (toolId: string) => {
 };
 
 export default function ChatPage({ mode }: ChatPageProps) {
+  const [helpOpened, setHelpOpened] = useState(false);
   const {
     t,
     targetId,
@@ -101,6 +106,58 @@ export default function ChatPage({ mode }: ChatPageProps) {
   const isMobile = useMediaQuery("(max-width: 48em)") ?? false;
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const HelpModeIcon =
+    mode === "mentor" ? GraduationCap : mode === "resource" ? BookOpen : MessageSquare;
+
+  const helpModal = (
+    <Modal
+      opened={helpOpened}
+      onClose={() => setHelpOpened(false)}
+      title={
+        <Group gap="xs">
+          <HelpModeIcon size={22} color="var(--mantine-color-blue-filled)" />
+          <Text fw={700} size="lg" style={{ letterSpacing: 0 }}>
+            {t(`chat.help.${mode}.title`)}
+          </Text>
+        </Group>
+      }
+      size="lg"
+    >
+      <Stack gap="md">
+        <Text>{t(`chat.help.${mode}.description`)}</Text>
+
+        <Box>
+          <Text fw={600} mb="xs">
+            {t("chat.help.usedForTitle")}
+          </Text>
+          <List spacing="xs">
+            <List.Item>{t(`chat.help.${mode}.usedForItems.first`)}</List.Item>
+            <List.Item>{t(`chat.help.${mode}.usedForItems.second`)}</List.Item>
+            <List.Item>{t(`chat.help.${mode}.usedForItems.third`)}</List.Item>
+          </List>
+        </Box>
+
+        <Divider />
+
+        <Box>
+          <Text fw={600} mb="xs">
+            {t("chat.help.howToTitle")}
+          </Text>
+          <List spacing="xs">
+            <List.Item>{t(`chat.help.${mode}.howToItems.first`)}</List.Item>
+            <List.Item>{t(`chat.help.${mode}.howToItems.second`)}</List.Item>
+            <List.Item>{t(`chat.help.${mode}.howToItems.third`)}</List.Item>
+            <List.Item>{t(`chat.help.${mode}.howToItems.fourth`)}</List.Item>
+          </List>
+        </Box>
+
+        <Alert color="blue" icon={<History size={18} />}>
+          {t(`chat.help.${mode}.note`)}
+        </Alert>
+      </Stack>
+    </Modal>
+  );
 
   useEffect(() => {
     if (!needsTarget && !streaming && inputRef.current) {
@@ -153,18 +210,27 @@ export default function ChatPage({ mode }: ChatPageProps) {
 
     return (
       <Box p="xl" style={{ height: "100%", overflowY: "auto" }}>
-        <Group mb="md" gap="md">
-          <ThemeIcon size={44} variant="light" radius="md">
-            <ModeIcon size={24} />
-          </ThemeIcon>
-          <Box>
-            <Title order={2} style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-              {title}
-            </Title>
-            <Text c="dimmed" size="sm" mt={2}>
-              {subtitle}
-            </Text>
-          </Box>
+        <Group mb="md" justify="space-between" align="flex-start" gap="md">
+          <Group gap="md" align="flex-start">
+            <ThemeIcon size={44} variant="light" radius="md">
+              <ModeIcon size={24} />
+            </ThemeIcon>
+            <Box>
+              <Title order={2} style={{ fontSize: "1.5rem", fontWeight: 700 }}>
+                {title}
+              </Title>
+              <Text c="dimmed" size="sm" mt={2}>
+                {subtitle}
+              </Text>
+            </Box>
+          </Group>
+          <Button
+            variant="light"
+            leftSection={<HelpCircle size={16} />}
+            onClick={() => setHelpOpened(true)}
+          >
+            {t("chat.help.button")}
+          </Button>
         </Group>
 
         <Divider mb="xl" />
@@ -275,6 +341,7 @@ export default function ChatPage({ mode }: ChatPageProps) {
             })}
           </SimpleGrid>
         )}
+        {helpModal}
       </Box>
     );
   }
@@ -481,18 +548,30 @@ export default function ChatPage({ mode }: ChatPageProps) {
             </Text>
           </Group>
 
-          {mode !== "general" && (
+          <Group gap="xs">
             <Button
-              variant="subtle"
+              variant="light"
               size="xs"
-              leftSection={<ChevronLeft size={14} />}
-              onClick={clearTarget}
+              leftSection={<HelpCircle size={14} />}
+              onClick={() => setHelpOpened(true)}
               px={8}
               style={{ fontWeight: 600 }}
             >
-              {targetName}
+              {t("chat.help.button")}
             </Button>
-          )}
+            {mode !== "general" && (
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<ChevronLeft size={14} />}
+                onClick={clearTarget}
+                px={8}
+                style={{ fontWeight: 600 }}
+              >
+                {targetName}
+              </Button>
+            )}
+          </Group>
         </Group>
 
         <ScrollArea style={{ flex: 1 }} p="md" scrollbarSize={6}>
@@ -708,6 +787,8 @@ export default function ChatPage({ mode }: ChatPageProps) {
           </Button>
         </Group>
       </Modal>
+
+      {helpModal}
 
       <Modal
         opened={showDeleteAllConfirm}

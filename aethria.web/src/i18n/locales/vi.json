@@ -119,6 +119,59 @@
       "title": "Công cụ kích hoạt",
       "web_search": "Tìm kiếm Web",
       "web_extract": "Trích xuất Web"
+    },
+    "help": {
+      "button": "Trợ giúp",
+      "usedForTitle": "Màn hỏi đáp này dùng để làm gì",
+      "howToTitle": "Cách sử dụng",
+      "general": {
+        "title": "Hỏi đáp chung",
+        "description": "Dùng Hỏi đáp chung cho các câu hỏi học tập mở, giải thích khái niệm, lập kế hoạch và hỗ trợ nhanh.",
+        "usedForItems": {
+          "first": "Đặt câu hỏi không gắn với một cố vấn hoặc tài liệu đã tải lên cụ thể.",
+          "second": "Bật công cụ như tìm kiếm web khi bạn cần thông tin hiện tại hoặc thông tin bên ngoài.",
+          "third": "Giữ các cuộc trò chuyện riêng trong lịch sử để từng chủ đề được sắp xếp rõ ràng."
+        },
+        "howToItems": {
+          "first": "Bắt đầu cuộc hỏi đáp mới hoặc chọn một cuộc trò chuyện có sẵn trong lịch sử.",
+          "second": "Bật công cụ từ nút công cụ khi câu trả lời cần dùng thông tin web bên ngoài.",
+          "third": "Nhập câu hỏi và gửi. Dùng Dừng nếu bạn muốn hủy câu trả lời đang streaming.",
+          "fourth": "Sao chép câu trả lời hữu ích hoặc xóa cuộc trò chuyện cũ từ khung lịch sử."
+        },
+        "note": "Để có kết quả tốt hơn, hãy nêu rõ mục tiêu, ngữ cảnh và ràng buộc trong câu hỏi."
+      },
+      "mentor": {
+        "title": "Hỏi đáp với Cố vấn",
+        "description": "Dùng Hỏi đáp với Cố vấn khi bạn muốn trao đổi có định hướng với một cố vấn AI chuyên biệt.",
+        "usedForItems": {
+          "first": "Chọn cố vấn đã được cấu hình cho một môn học, vai trò, phong cách học hoặc mục tiêu.",
+          "second": "Nhận câu trả lời theo hướng dẫn và công cụ được phép của cố vấn đó.",
+          "third": "Giữ lịch sử riêng cho từng cố vấn để cuộc trò chuyện luôn tập trung."
+        },
+        "howToItems": {
+          "first": "Chọn một cố vấn từ danh sách trước khi bắt đầu trò chuyện.",
+          "second": "Đặt câu hỏi phù hợp với chuyên môn hoặc mục tiêu học tập của cố vấn.",
+          "third": "Dùng nút chọn cố vấn trong header chat để chuyển sang cố vấn khác.",
+          "fourth": "Tạo hoặc chỉnh sửa cố vấn từ màn Quản lý Cố vấn khi bạn cần hành vi khác."
+        },
+        "note": "Cố vấn chuyên biệt hoạt động tốt nhất với câu hỏi tập trung. Hãy nói rõ trình độ, mục tiêu và điểm bạn đang mắc."
+      },
+      "resource": {
+        "title": "Hỏi đáp Tài liệu",
+        "description": "Dùng Hỏi đáp Tài liệu để đặt câu hỏi dựa trên một tài liệu bạn đã tải lên.",
+        "usedForItems": {
+          "first": "Chọn tài liệu và hỏi về nội dung trong tài liệu đó.",
+          "second": "Trích xuất giải thích, tóm tắt, ý chính và ghi chú học tập từ tài liệu đã tải lên.",
+          "third": "Giữ lịch sử riêng theo từng tài liệu để cuộc trò chuyện của mỗi tài liệu được sắp xếp rõ ràng."
+        },
+        "howToItems": {
+          "first": "Chọn một tài liệu từ danh sách trước khi bắt đầu trò chuyện.",
+          "second": "Hỏi cụ thể về tài liệu, phần nội dung, khái niệm hoặc ví dụ bạn cần.",
+          "third": "Dùng nút chọn tài liệu trong header chat để chuyển tài liệu.",
+          "fourth": "Tải lên hoặc cập nhật tài liệu từ màn Quản lý Tài liệu khi thiếu tài liệu cần dùng."
+        },
+        "note": "Tài liệu được lập chỉ mục tốt sẽ cho câu trả lời tốt hơn. Nếu câu trả lời quá rộng, hãy hỏi về một phần hoặc khái niệm cụ thể."
+      }
     }
   },
   "mentor": {
@@ -130,6 +183,25 @@
     "deleteConfirm": "Bạn có chắc chắn muốn xóa \"{{name}}\"? Hành động này không thể hoàn tác.",
     "deleteBtn": "Xóa",
     "empty": "Chưa có cố vấn nào. Hãy tạo cố vấn đầu tiên!",
+    "help": {
+      "button": "Trợ giúp",
+      "title": "Cố vấn",
+      "description": "Trang này giúp bạn tạo và quản lý các cố vấn AI chuyên biệt cho những cuộc hỏi đáp học tập tập trung.",
+      "usedForTitle": "Trang này dùng để làm gì",
+      "usedForItems": {
+        "specialize": "Tạo cố vấn cho từng môn học, vai trò, phong cách học hoặc mục tiêu học tập cụ thể.",
+        "guide": "Định nghĩa hướng dẫn để mỗi cố vấn trả lời đúng hành vi và phạm vi bạn mong muốn.",
+        "tools": "Bật công cụ khi cố vấn cần dùng thêm khả năng trong cuộc trò chuyện."
+      },
+      "howToTitle": "Cách sử dụng",
+      "howToItems": {
+        "create": "Chọn Tạo Cố vấn và nhập tên, mô tả rõ ràng.",
+        "instruction": "Viết hướng dẫn giải thích cố vấn nên dạy, phản hồi và giới hạn phạm vi như thế nào.",
+        "tools": "Chọn các công cụ mà cố vấn được phép dùng nếu cố vấn cần chúng.",
+        "chat": "Mở Hỏi đáp với Cố vấn và chọn cố vấn khi bạn muốn một cuộc trò chuyện có định hướng."
+      },
+      "note": "Hướng dẫn càng cụ thể thì cố vấn càng nhất quán. Hãy nêu đối tượng học, giọng điệu, phạm vi chủ đề và phong cách giảng dạy mong muốn."
+    },
     "table": {
       "name": "Tên",
       "description": "Mô tả",
@@ -162,6 +234,25 @@
     "deleteConfirm": "Bạn có chắc chắn muốn xóa \"{{name}}\"? Hành động này không thể hoàn tác.",
     "deleteBtn": "Xóa",
     "empty": "Chưa có tài liệu nào. Hãy tải lên tài liệu đầu tiên!",
+    "help": {
+      "button": "Trợ giúp",
+      "title": "Tài liệu học tập",
+      "description": "Trang này lưu các tài liệu học tập đã tải lên và chuẩn bị chúng cho tìm kiếm, hỏi đáp, tạo trắc nghiệm và tạo lộ trình.",
+      "usedForTitle": "Trang này dùng để làm gì",
+      "usedForItems": {
+        "store": "Tải lên và quản lý tài liệu để Aethria dùng làm ngữ cảnh học tập.",
+        "index": "Trích xuất, chia đoạn và lập chỉ mục nội dung để có thể tìm kiếm theo ngữ nghĩa.",
+        "reuse": "Dùng tài liệu đã tải lên trong hỏi đáp tài liệu, trắc nghiệm AI và lộ trình AI."
+      },
+      "howToTitle": "Cách sử dụng",
+      "howToItems": {
+        "upload": "Chọn Tải lên Tài liệu, nhập tên và mô tả nếu cần, rồi chọn tệp.",
+        "wait": "Chờ quá trình tải lên và lập chỉ mục hoàn tất trước khi dùng tài liệu ở nơi khác.",
+        "manage": "Chỉnh sửa thông tin, tải xuống tệp gốc hoặc xóa tài liệu không còn cần dùng.",
+        "use": "Chọn tài liệu từ màn hỏi đáp, trắc nghiệm hoặc lộ trình khi bạn muốn AI làm việc dựa trên nội dung đó."
+      },
+      "note": "Tên tệp và mô tả rõ ràng giúp tìm tài liệu dễ hơn. Tệp lớn có thể mất nhiều thời gian hơn để tải lên và lập chỉ mục."
+    },
     "table": {
       "name": "Tên",
       "description": "Mô tả",
@@ -211,6 +302,25 @@
     "deleteBtn": "Xóa",
     "empty": "Chưa có bài trắc nghiệm nào. Hãy tự tạo hoặc dùng AI để tạo bài trắc nghiệm đầu tiên!",
     "noDescription": "Không có mô tả",
+    "help": {
+      "button": "Trợ giúp",
+      "title": "Bài trắc nghiệm",
+      "description": "Trang này giúp bạn tạo, sinh bằng AI, làm bài và xem lại bài trắc nghiệm cho tài liệu học tập.",
+      "usedForTitle": "Trang này dùng để làm gì",
+      "usedForItems": {
+        "create": "Tạo bài trắc nghiệm thủ công khi bạn muốn kiểm soát toàn bộ câu hỏi.",
+        "generate": "Tạo bài trắc nghiệm bằng AI từ tài liệu tham chiếu và yêu cầu của bạn.",
+        "practice": "Làm bài trắc nghiệm và xem lại các lần nộp để theo dõi mức độ hiểu bài."
+      },
+      "howToTitle": "Cách sử dụng",
+      "howToItems": {
+        "mode": "Chọn Tạo bài trắc nghiệm, sau đó chọn chế độ Thủ công hoặc Trình tạo AI.",
+        "ai": "Với chế độ AI, chọn tài liệu, nhập số lượng câu hỏi và thêm yêu cầu cụ thể.",
+        "attempt": "Dùng thao tác làm bài để trả lời câu hỏi và nộp bài.",
+        "history": "Mở lịch sử làm bài để xem điểm, câu trả lời và giải thích."
+      },
+      "note": "Để AI tạo bài tốt hơn, hãy chọn tài liệu tập trung và mô tả rõ chủ đề, độ khó hoặc chương bạn muốn kiểm tra."
+    },
     "table": {
       "name": "Tên",
       "description": "Mô tả",
@@ -309,6 +419,25 @@
     "deleteConfirm": "Bạn có chắc chắn muốn xóa lộ trình học tập \"{{name}}\"? Hành động này không thể hoàn tác.",
     "deleteBtn": "Xóa",
     "empty": "Chưa có lộ trình học tập nào. Hãy dùng AI để tạo lộ trình đầu tiên!",
+    "help": {
+      "button": "Trợ giúp",
+      "title": "Lộ trình học tập",
+      "description": "Trang này giúp bạn tạo và quản lý lộ trình học tập bằng AI từ các tài liệu đã tải lên.",
+      "usedForTitle": "Trang này dùng để làm gì",
+      "usedForItems": {
+        "generate": "Tạo kế hoạch học tập có cấu trúc từ một tài liệu tham chiếu.",
+        "organize": "Biến nội dung học rộng thành các mốc học và bước thực hành theo thứ tự.",
+        "review": "Xem lại từng lộ trình dưới dạng nội dung hoặc biểu đồ trực quan."
+      },
+      "howToTitle": "Cách sử dụng",
+      "howToItems": {
+        "resource": "Tải lên hoặc chọn tài liệu chứa chủ đề bạn muốn học.",
+        "prompt": "Thêm yêu cầu tạo lộ trình, ví dụ cấp độ kỹ năng, thời gian học hoặc phần cần tập trung.",
+        "generate": "Chọn Tạo lộ trình học tập và chờ quá trình AI hoàn tất.",
+        "open": "Dùng thao tác xem để mở chi tiết lộ trình và chuyển giữa tab nội dung và biểu đồ."
+      },
+      "note": "Tài liệu tốt sẽ tạo lộ trình tốt hơn. Hãy dùng tài liệu rõ ràng và prompt cụ thể khi bạn cần kế hoạch tập trung."
+    },
     "table": {
       "name": "Tên",
       "description": "Mô tả",
@@ -379,6 +508,25 @@
     "deleteConfirm": "Bạn có chắc chắn muốn thu hồi API key \"{{name}}\"? Sau khi thu hồi, mọi yêu cầu sử dụng key này sẽ thất bại. Hành động này không thể hoàn tác.",
     "deleteBtn": "Thu hồi",
     "empty": "Chưa có API key nào. Hãy tạo một key để truy cập API!",
+    "help": {
+      "button": "Trợ giúp",
+      "title": "Dùng API Key với MCP",
+      "description": "Trang này dùng để tạo và quản lý API key cho các agent bên ngoài kết nối tới Aethria MCP server của bạn.",
+      "usedForTitle": "Trang này dùng để làm gì",
+      "usedForItems": {
+        "manage": "Tạo, xem lại và thu hồi key dùng bên ngoài website này.",
+        "chat": "Cho phép agent dùng các công cụ Aethria MCP, như liệt kê tài liệu và hỏi đáp với tài liệu.",
+        "secure": "Giữ quyền truy cập gắn với tài khoản của bạn. Key bị thu hồi hoặc hết hạn sẽ ngừng hoạt động ngay."
+      },
+      "connectTitle": "Cách kết nối agent của bạn",
+      "connectItems": {
+        "create": "Tạo API key và sao chép ngay. Key chỉ hiển thị một lần.",
+        "url": "Thêm MCP endpoint của website này vào agent: https://mcp.aethria.study/mcp.",
+        "header": "Cấu hình agent gửi HTTP header này:",
+        "tools": "Sau khi kết nối, agent có thể gọi các công cụ Aethria MCP thay mặt bạn."
+      },
+      "note": "Giữ key riêng tư và thu hồi nếu key bị lộ."
+    },
     "table": {
       "name": "Tên",
       "lastFourChars": "API Key",

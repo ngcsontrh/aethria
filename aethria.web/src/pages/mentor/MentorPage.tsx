@@ -10,12 +10,25 @@ import {
   Text,
   LoadingOverlay,
   Skeleton,
+  Stack,
+  Divider,
+  List,
+  Alert,
 } from "@mantine/core";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  HelpCircle,
+  Users,
+  MessageSquare,
+} from "lucide-react";
 import { useMentorPage } from "./useMentorPage";
 import MentorForm from "./MentorForm";
 
 export default function MentorPage() {
+  const [helpOpened, setHelpOpened] = useState(false);
   const {
     t,
     mentors,
@@ -39,9 +52,18 @@ export default function MentorPage() {
     <Box p="md" style={{ overflow: "auto", flex: 1 }}>
       <Group justify="space-between" mb="md">
         <Title order={3}>{t("mentor.title")}</Title>
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
-          {t("mentor.create")}
-        </Button>
+        <Group gap="xs">
+          <Button
+            variant="light"
+            leftSection={<HelpCircle size={16} />}
+            onClick={() => setHelpOpened(true)}
+          >
+            {t("mentor.help.button")}
+          </Button>
+          <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+            {t("mentor.create")}
+          </Button>
+        </Group>
       </Group>
 
       <Box pos="relative" mih={200}>
@@ -138,6 +160,53 @@ export default function MentorPage() {
           <Pagination total={totalPages} value={page} onChange={setPage} />
         </Group>
       )}
+
+      <Modal
+        opened={helpOpened}
+        onClose={() => setHelpOpened(false)}
+        title={
+          <Group gap="xs">
+            <Users size={22} color="var(--mantine-color-blue-filled)" />
+            <Text fw={700} size="lg" style={{ letterSpacing: 0 }}>
+              {t("mentor.help.title")}
+            </Text>
+          </Group>
+        }
+        size="lg"
+      >
+        <Stack gap="md">
+          <Text>{t("mentor.help.description")}</Text>
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("mentor.help.usedForTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("mentor.help.usedForItems.specialize")}</List.Item>
+              <List.Item>{t("mentor.help.usedForItems.guide")}</List.Item>
+              <List.Item>{t("mentor.help.usedForItems.tools")}</List.Item>
+            </List>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("mentor.help.howToTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("mentor.help.howToItems.create")}</List.Item>
+              <List.Item>{t("mentor.help.howToItems.instruction")}</List.Item>
+              <List.Item>{t("mentor.help.howToItems.tools")}</List.Item>
+              <List.Item>{t("mentor.help.howToItems.chat")}</List.Item>
+            </List>
+          </Box>
+
+          <Alert color="blue" icon={<MessageSquare size={18} />}>
+            {t("mentor.help.note")}
+          </Alert>
+        </Stack>
+      </Modal>
 
       <Modal
         opened={formOpened}

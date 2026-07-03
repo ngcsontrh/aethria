@@ -11,8 +11,21 @@ import {
   LoadingOverlay,
   Skeleton,
   Badge,
+  Stack,
+  Divider,
+  List,
+  Alert,
 } from "@mantine/core";
-import { Plus, Pencil, Trash2, Download } from "lucide-react";
+import { useState } from "react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Download,
+  HelpCircle,
+  BookOpen,
+  Search,
+} from "lucide-react";
 import { useResourcePage } from "./useResourcePage";
 import ResourceForm from "./ResourceForm";
 
@@ -35,6 +48,7 @@ function getFileTypeColor(type: string) {
 }
 
 export default function ResourcePage() {
+  const [helpOpened, setHelpOpened] = useState(false);
   const {
     t,
     resources,
@@ -64,9 +78,18 @@ export default function ResourcePage() {
     <Box p="md" style={{ overflow: "auto", flex: 1 }}>
       <Group justify="space-between" mb="md">
         <Title order={3}>{t("resource.title")}</Title>
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
-          {t("resource.create")}
-        </Button>
+        <Group gap="xs">
+          <Button
+            variant="light"
+            leftSection={<HelpCircle size={16} />}
+            onClick={() => setHelpOpened(true)}
+          >
+            {t("resource.help.button")}
+          </Button>
+          <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+            {t("resource.create")}
+          </Button>
+        </Group>
       </Group>
 
       <Box pos="relative" mih={200}>
@@ -196,6 +219,53 @@ export default function ResourcePage() {
           <Pagination total={totalPages} value={page} onChange={setPage} />
         </Group>
       )}
+
+      <Modal
+        opened={helpOpened}
+        onClose={() => setHelpOpened(false)}
+        title={
+          <Group gap="xs">
+            <BookOpen size={22} color="var(--mantine-color-blue-filled)" />
+            <Text fw={700} size="lg" style={{ letterSpacing: 0 }}>
+              {t("resource.help.title")}
+            </Text>
+          </Group>
+        }
+        size="lg"
+      >
+        <Stack gap="md">
+          <Text>{t("resource.help.description")}</Text>
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("resource.help.usedForTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("resource.help.usedForItems.store")}</List.Item>
+              <List.Item>{t("resource.help.usedForItems.index")}</List.Item>
+              <List.Item>{t("resource.help.usedForItems.reuse")}</List.Item>
+            </List>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("resource.help.howToTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("resource.help.howToItems.upload")}</List.Item>
+              <List.Item>{t("resource.help.howToItems.wait")}</List.Item>
+              <List.Item>{t("resource.help.howToItems.manage")}</List.Item>
+              <List.Item>{t("resource.help.howToItems.use")}</List.Item>
+            </List>
+          </Box>
+
+          <Alert color="blue" icon={<Search size={18} />}>
+            {t("resource.help.note")}
+          </Alert>
+        </Stack>
+      </Modal>
 
       <Modal
         opened={formOpened}

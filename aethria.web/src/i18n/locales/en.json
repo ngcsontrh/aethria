@@ -119,6 +119,59 @@
       "title": "Enabled Tools",
       "web_search": "Web Search",
       "web_extract": "Web Extract"
+    },
+    "help": {
+      "button": "Help",
+      "usedForTitle": "What this chat is for",
+      "howToTitle": "How to use it",
+      "general": {
+        "title": "General Chat",
+        "description": "Use General Chat for open-ended learning questions, explanations, planning, and quick help.",
+        "usedForItems": {
+          "first": "Ask questions that are not tied to a specific mentor or uploaded resource.",
+          "second": "Use optional tools, such as web search, when you need current or external information.",
+          "third": "Keep separate conversations in chat history so each topic stays organized."
+        },
+        "howToItems": {
+          "first": "Start a new chat or select an existing conversation from history.",
+          "second": "Enable tools from the tool button when the answer should use external web information.",
+          "third": "Type your question and send it. Use Stop if you want to cancel a streaming response.",
+          "fourth": "Copy useful answers or delete old conversations from the history panel."
+        },
+        "note": "For best results, include the goal, context, and constraints in your question."
+      },
+      "mentor": {
+        "title": "Mentor Chat",
+        "description": "Use Mentor Chat when you want a guided conversation with a specialized AI mentor.",
+        "usedForItems": {
+          "first": "Choose a mentor configured for a subject, role, learning style, or goal.",
+          "second": "Get answers shaped by that mentor's instruction and allowed tools.",
+          "third": "Keep separate history for each mentor so conversations stay focused."
+        },
+        "howToItems": {
+          "first": "Select a mentor from the list before starting the conversation.",
+          "second": "Ask questions that match the mentor's specialty or learning goal.",
+          "third": "Use the mentor selector button in the chat header to switch to another mentor.",
+          "fourth": "Create or edit mentors from the Mentors page when you need a different behavior."
+        },
+        "note": "A focused mentor works best with focused questions. Mention your level, goal, and where you are stuck."
+      },
+      "resource": {
+        "title": "Resource Chat",
+        "description": "Use Resource Chat to ask questions grounded in one of your uploaded resources.",
+        "usedForItems": {
+          "first": "Choose a resource and ask questions about its content.",
+          "second": "Extract explanations, summaries, key points, and study notes from uploaded material.",
+          "third": "Keep separate history per resource so each document's conversation stays organized."
+        },
+        "howToItems": {
+          "first": "Select a resource from the list before starting the conversation.",
+          "second": "Ask specific questions about the document, section, concept, or example you need.",
+          "third": "Use the resource selector button in the chat header to switch documents.",
+          "fourth": "Upload or update resources from the Resources page when the needed document is missing."
+        },
+        "note": "Better indexed documents produce better answers. If an answer is too broad, ask about a specific section or concept."
+      }
     }
   },
   "mentor": {
@@ -130,6 +183,25 @@
     "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "deleteBtn": "Delete",
     "empty": "No mentors yet. Create your first mentor!",
+    "help": {
+      "button": "Help",
+      "title": "Mentors",
+      "description": "This page helps you create and manage specialized AI mentors for focused learning conversations.",
+      "usedForTitle": "What this page is for",
+      "usedForItems": {
+        "specialize": "Create mentors for specific subjects, roles, learning styles, or study goals.",
+        "guide": "Define instructions so each mentor answers with the behavior and scope you expect.",
+        "tools": "Enable tools when a mentor should use extra capabilities during a conversation."
+      },
+      "howToTitle": "How to use it",
+      "howToItems": {
+        "create": "Select Create Mentor and provide a clear name and description.",
+        "instruction": "Write the instruction that explains how the mentor should teach, respond, and limit its scope.",
+        "tools": "Choose the tools the mentor is allowed to use, if the mentor needs them.",
+        "chat": "Open Mentor Chat and select the mentor when you want a guided conversation."
+      },
+      "note": "A precise instruction makes the mentor more consistent. Include the target audience, tone, topic boundaries, and preferred teaching style."
+    },
     "table": {
       "name": "Name",
       "description": "Description",
@@ -162,6 +234,25 @@
     "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "deleteBtn": "Delete",
     "empty": "No resources yet. Upload your first resource!",
+    "help": {
+      "button": "Help",
+      "title": "Learning Resources",
+      "description": "This page stores your uploaded learning materials and prepares them for search, chat, quiz generation, and roadmap generation.",
+      "usedForTitle": "What this page is for",
+      "usedForItems": {
+        "store": "Upload and manage documents that Aethria can use as learning context.",
+        "index": "Extract, chunk, and index resource content so it can be searched semantically.",
+        "reuse": "Use uploaded resources in resource chat, AI quizzes, and AI roadmaps."
+      },
+      "howToTitle": "How to use it",
+      "howToItems": {
+        "upload": "Select Upload Resource, add a name and optional description, then choose a file.",
+        "wait": "Wait for upload and indexing to finish before using the resource elsewhere.",
+        "manage": "Edit resource details, download the original file, or delete resources you no longer need.",
+        "use": "Choose the resource from chat, quiz, or roadmap screens when you want AI to work from that material."
+      },
+      "note": "Clear file names and descriptions make resources easier to find. Larger files may take longer to upload and index."
+    },
     "table": {
       "name": "Name",
       "description": "Description",
@@ -211,6 +302,25 @@
     "deleteBtn": "Delete",
     "empty": "No quizzes yet. Create your first quiz manually or generate one with AI!",
     "noDescription": "No description",
+    "help": {
+      "button": "Help",
+      "title": "Quizzes",
+      "description": "This page helps you create, generate, take, and review quizzes for your learning materials.",
+      "usedForTitle": "What this page is for",
+      "usedForItems": {
+        "create": "Create quizzes manually when you want full control over the questions.",
+        "generate": "Generate quizzes with AI from a reference resource and your instructions.",
+        "practice": "Take quizzes and review previous submissions to track understanding."
+      },
+      "howToTitle": "How to use it",
+      "howToItems": {
+        "mode": "Select Create Quiz, then choose Manual or AI Generator mode.",
+        "ai": "For AI generation, choose a resource, enter the number of questions, and add focused instructions.",
+        "attempt": "Use the take quiz action to answer questions and submit your attempt.",
+        "history": "Open submission history to review scores, answers, and explanations."
+      },
+      "note": "For better AI quizzes, choose a focused resource and describe the topics, difficulty, or chapter you want to test."
+    },
     "table": {
       "name": "Name",
       "description": "Description",
@@ -309,6 +419,25 @@
     "deleteConfirm": "Are you sure you want to delete roadmap \"{{name}}\"? This action cannot be undone.",
     "deleteBtn": "Delete",
     "empty": "No roadmaps yet. Generate your first roadmap with AI!",
+    "help": {
+      "button": "Help",
+      "title": "Learning Roadmaps",
+      "description": "This page helps you generate and manage AI learning roadmaps from your uploaded resources.",
+      "usedForTitle": "What this page is for",
+      "usedForItems": {
+        "generate": "Generate a structured study plan from a reference resource.",
+        "organize": "Turn broad learning material into ordered milestones and practical steps.",
+        "review": "Review each roadmap as written content or as a visual flowchart."
+      },
+      "howToTitle": "How to use it",
+      "howToItems": {
+        "resource": "Upload or choose a resource that contains the topic you want to study.",
+        "prompt": "Add generation instructions, such as skill level, timeline, or focus areas.",
+        "generate": "Select Generate Roadmap and wait for the AI process to finish.",
+        "open": "Use the view action to open the roadmap detail and switch between content and flowchart tabs."
+      },
+      "note": "Better resources produce better roadmaps. Use a clear document and a specific prompt when you need a focused plan."
+    },
     "table": {
       "name": "Name",
       "description": "Description",
@@ -379,6 +508,25 @@
     "deleteConfirm": "Are you sure you want to revoke API key \"{{name}}\"? Once revoked, any requests using this key will fail. This action cannot be undone.",
     "deleteBtn": "Revoke",
     "empty": "No API keys yet. Create one to access the API!",
+    "help": {
+      "button": "Help",
+      "title": "Using API Keys with MCP",
+      "description": "This page creates and manages API keys for external agents that connect to your Aethria MCP server.",
+      "usedForTitle": "What this page is for",
+      "usedForItems": {
+        "manage": "Create, review, and revoke keys used outside this website.",
+        "chat": "Let your agent use Aethria MCP tools, such as listing resources and chatting with a resource.",
+        "secure": "Keep access scoped to your account. Revoked or expired keys stop working immediately."
+      },
+      "connectTitle": "How to connect your agent",
+      "connectItems": {
+        "create": "Create an API key and copy it immediately. It is only shown once.",
+        "url": "Add this website's MCP endpoint to your agent: https://mcp.aethria.study/mcp.",
+        "header": "Configure the agent to send this HTTP header:",
+        "tools": "After connecting, the agent can call the Aethria MCP tools on your behalf."
+      },
+      "note": "Keep the key private and revoke it if it is exposed."
+    },
     "table": {
       "name": "Name",
       "lastFourChars": "API Key",

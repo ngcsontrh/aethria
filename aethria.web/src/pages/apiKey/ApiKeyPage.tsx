@@ -15,8 +15,12 @@ import {
   TextInput,
   CopyButton,
   Stack,
+  Divider,
+  List,
+  Code,
 } from "@mantine/core";
-import { Plus, Ban, AlertTriangle, KeyRound } from "lucide-react";
+import { useState } from "react";
+import { Plus, Ban, AlertTriangle, KeyRound, HelpCircle } from "lucide-react";
 import { useApiKeyPage } from "./useApiKeyPage";
 import ApiKeyForm from "./ApiKeyForm";
 
@@ -29,6 +33,7 @@ function getStatusBadge(status: string) {
 }
 
 export default function ApiKeyPage() {
+  const [helpOpened, setHelpOpened] = useState(false);
   const {
     t,
     apiKeys,
@@ -52,9 +57,18 @@ export default function ApiKeyPage() {
     <Box p="md" style={{ overflow: "auto", flex: 1 }}>
       <Group justify="space-between" mb="md">
         <Title order={3}>{t("apiKey.title")}</Title>
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
-          {t("apiKey.create")}
-        </Button>
+        <Group gap="xs">
+          <Button
+            variant="light"
+            leftSection={<HelpCircle size={16} />}
+            onClick={() => setHelpOpened(true)}
+          >
+            {t("apiKey.help.button")}
+          </Button>
+          <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+            {t("apiKey.create")}
+          </Button>
+        </Group>
       </Group>
 
       <Box pos="relative" mih={200}>
@@ -148,6 +162,56 @@ export default function ApiKeyPage() {
           <Pagination total={totalPages} value={page} onChange={setPage} />
         </Group>
       )}
+
+      <Modal
+        opened={helpOpened}
+        onClose={() => setHelpOpened(false)}
+        title={
+          <Group gap="xs">
+            <KeyRound size={22} color="var(--mantine-color-blue-filled)" />
+            <Text fw={700} size="lg" style={{ letterSpacing: 0 }}>
+              {t("apiKey.help.title")}
+            </Text>
+          </Group>
+        }
+        size="lg"
+      >
+        <Stack gap="md">
+          <Text>{t("apiKey.help.description")}</Text>
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("apiKey.help.usedForTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("apiKey.help.usedForItems.manage")}</List.Item>
+              <List.Item>{t("apiKey.help.usedForItems.chat")}</List.Item>
+              <List.Item>{t("apiKey.help.usedForItems.secure")}</List.Item>
+            </List>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Text fw={600} mb="xs">
+              {t("apiKey.help.connectTitle")}
+            </Text>
+            <List spacing="xs">
+              <List.Item>{t("apiKey.help.connectItems.create")}</List.Item>
+              <List.Item>{t("apiKey.help.connectItems.url")}</List.Item>
+              <List.Item>
+                {t("apiKey.help.connectItems.header")}{" "}
+                <Code>X-Api-Key: {"<your-api-key>"}</Code>
+              </List.Item>
+              <List.Item>{t("apiKey.help.connectItems.tools")}</List.Item>
+            </List>
+          </Box>
+
+          <Alert color="blue" icon={<KeyRound size={18} />}>
+            {t("apiKey.help.note")}
+          </Alert>
+        </Stack>
+      </Modal>
 
       {/* Creation Modal */}
       <Modal

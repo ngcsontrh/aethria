@@ -69,12 +69,17 @@ function mapSessions(
 }
 
 function mapMessages(response: ChatHistoryResponse): ChatMessage[] {
-  return response.messages.map((message) => ({
-    id: message.id,
-    role: message.role as "user" | "assistant",
-    content: message.content,
-    createdAt: message.createdAt,
-  }));
+  return response.messages
+    .filter(
+      (message) =>
+        message.role !== "assistant" || message.content.trim().length > 0,
+    )
+    .map((message) => ({
+      id: message.id,
+      role: message.role as "user" | "assistant",
+      content: message.content,
+      createdAt: message.createdAt,
+    }));
 }
 
 async function fetchSessionsByMode(
